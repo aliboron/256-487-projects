@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/restUtil.php';
+require_once __DIR__ . '/db.php';
 
 // Create endpoint manager
 $manager = new EndpointManager();
