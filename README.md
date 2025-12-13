@@ -33,6 +33,7 @@ This project implements a digital game marketplace platform where users can brow
 │   │   ├── index.php             # API entry point & router
 │   │   ├── restUtil.php          # REST utilities & base classes
 │   │   ├── restUtil.local.php    # Local configuration
+│   │   ├── .env                  # Environment configuration
 │   │   └── controllers/          # API controllers
 │   │       ├── HealthController.php
 │   │       └── UserController.php
@@ -96,6 +97,15 @@ This project implements a digital game marketplace platform where users can brow
 
     - Place project in WAMP's `www` directory
     - Configure the API wrapper at `www/api/`
+    - Create a `.env` file in `256-php/api/.env` with the following configuration:
+    
+    ```env
+    URL=
+    DB_NAME=
+    DB_USER=
+    DB_PWD=
+    ```
+    
     - Access API at: `http://localhost/api`
 
 3. **Setup Android App**
