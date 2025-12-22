@@ -1,19 +1,31 @@
 <?php
-
+    include "db.php";
 class UserRepository
 {
     /** @var array<string, User> */
     private array $users;
-
-    public function __construct()
+    private PDO $db;
+    public function __construct(PDO $db)
     {
+        $this->db= $db;
         $this->users = [
             '1' => new User('1', 'John'),
             '2' => new User('2', 'Jane'),
             '3' => new User('3', 'Alice'),
         ];
     }
-
+    public function deactivateUser(int $id):bool
+    {
+        $stmt = $this->db->prepare("UPDATE users SET is_verified = 0 WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->rowCount()>0;
+    }
+    public function deleteUser(int $id):bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM USERS WHERE id = :id");
+        $stmt->execute(['id'=>$id]);
+        return $stmt->rowCount()>0;
+    }
     public function getAll(): array
     {
         return array_values($this->users);
@@ -51,11 +63,13 @@ class User
 
 class UserController
 {
+    
     private UserRepository $repository;
 
     public function __construct()
     {
-        $this->repository = new UserRepository();
+        global $db;
+        $this->repository = new UserRepository($db);
     }
 
     #[Route('/users', 'GET')]
@@ -66,13 +80,14 @@ class UserController
     }
 
     #[Route('/users/{id}', 'GET')]
-    public function getUser(string $id): ApiResponse
+    public function getUser(int $id): ApiResponse
     {
         $user = $this->repository->find($id);
         return $user
             ? new ApiResponse(true, $user->toArray())
             : new ApiResponse(false, null, 'User not found');
     }
+    
 
     #[Route('/users', 'POST')]
     public function createUser(): ApiResponse
