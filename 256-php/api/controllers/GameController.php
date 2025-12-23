@@ -7,7 +7,7 @@ class Game
         public string $name,
         public string $description,
         public float $price,
-        public bool $is_approved,
+        public int $is_approved,
         public ?string $logo_path,
         public int $developer_id,
         public string $genre,
@@ -120,13 +120,33 @@ class GameRepository
      * Get games by developer
      * @return Game[]
      */
-    public function getByDeveloper(int $developerId): array
+    public function getByDeveloper(int $developerId, string $statusFilter): array
     {
-        $stmt = $this->db->prepare("
-            SELECT * FROM games 
-            WHERE developer_id = :developer_id 
-            ORDER BY created_at DESC
-        ");
+        if ($statusFilter === 'approved') {
+            $stmt = $this->db->prepare("
+                SELECT * FROM games 
+                WHERE developer_id = :developer_id AND is_approved = 1
+                ORDER BY created_at DESC
+            ");
+        } elseif ($statusFilter === 'pending') {
+            $stmt = $this->db->prepare("
+                SELECT * FROM games 
+                WHERE developer_id = :developer_id AND is_approved = 0
+                ORDER BY created_at DESC
+            ");
+        } elseif ($statusFilter === 'rejected') {
+            $stmt = $this->db->prepare("
+                SELECT * FROM games 
+                WHERE developer_id = :developer_id AND is_approved = -1
+                ORDER BY created_at DESC
+            ");
+        } else {
+            $stmt = $this->db->prepare("
+                SELECT * FROM games 
+                WHERE developer_id = :developer_id 
+                ORDER BY created_at DESC
+            ");
+        }
         $stmt->execute(['developer_id' => $developerId]);
 
         $games = [];
@@ -170,6 +190,71 @@ class GameRepository
 
         $id = (int)$this->db->lastInsertId();
         return $this->find($id);
+    }
+
+    public function createGame(Game $game): Game
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO games (name, description, price, is_approved, logo_path, developer_id, genre)
+            VALUES (:name, :description, :price, :is_approved, :logo_path, :developer_id, :genre)
+        ");
+
+        $stmt->execute([
+            'name'         => $game->name,
+            'description'  => $game->description,
+            'price'        => $game->price,
+            'is_approved'  => $game->is_approved ? 1 : 0,
+            'logo_path'    => $game->logo_path,
+            'developer_id' => $game->developer_id,
+            'genre'        => $game->genre
+        ]);
+
+        $id = (int)$this->db->lastInsertId();
+        return $this->find($id);
+    }
+
+    public function updateGame(Game $game): ?Game
+    {
+        $stmt = $this->db->prepare("
+            UPDATE games SET 
+                name = :name,
+                description = :description,
+                price = :price,
+                is_approved = :is_approved,
+                logo_path = :logo_path,
+                developer_id = :developer_id,
+                genre = :genre
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+            'id'           => $game->id,
+            'name'         => $game->name,
+            'description'  => $game->description,
+            'price'        => $game->price,
+            'is_approved'  => $game->is_approved ? 1 : 0,
+            'logo_path'    => $game->logo_path,
+            'developer_id' => $game->developer_id,
+            'genre'        => $game->genre
+        ]);
+
+        return $this->find((int)$game->id);
+    }
+
+    public function getUsersByGame(int $gameId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT u.* FROM users u
+            JOIN game_users gu ON u.id = gu.user_id
+            WHERE gu.game_id = :game_id
+        "); # TODO: FIX
+        $stmt->execute(['game_id' => $gameId]);
+
+        $users = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $users[] = $row; // TODO: Convert to User
+        }
+        return $users;
     }
 
     /**
@@ -313,15 +398,15 @@ class GameController
     /**
      * GET /games/developer/{developerId} - Get games by developer
      */
-    #[Route('/games/developer/{developerId}', 'GET')]
-    public function getGamesByDeveloper(string $developerId): ApiResponse
-    {
-        $games = array_map(
-            fn(Game $g) => $g->toArray(),
-            $this->repository->getByDeveloper((int)$developerId)
-        );
-        return new ApiResponse(true, $games);
-    }
+    // #[Route('/games/developer/{developerId}', 'GET')]
+    // public function getGamesByDeveloper(string $developerId): ApiResponse
+    // {
+    //     $games = array_map(
+    //         fn(Game $g) => $g->toArray(),
+    //         $this->repository->getByDeveloper((int)$developerId)
+    //     );
+    //     return new ApiResponse(true, $games);
+    // }
 
     /**
      * GET /games/search/{query} - Search games by name

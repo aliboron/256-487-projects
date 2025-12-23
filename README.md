@@ -76,6 +76,7 @@ This project implements a digital game marketplace platform where users can brow
 
 -   **WAMP Server** (Windows) or **LAMP/MAMP** (Linux/Mac)
 -   **PHP 8.0+**
+-   **Composer** (PHP dependency manager)
 -   **Android Studio** (for mobile development)
 -   **Git**
 
@@ -96,16 +97,25 @@ This project implements a digital game marketplace platform where users can brow
     Quick start:
 
     - Place project in WAMP's `www` directory
+    - Install dependencies:
+        ```bash
+        cd 256-php/api
+        composer install
+        ```
     - Configure the API wrapper at `www/api/`
     - Create a `.env` file in `256-php/api/.env` with the following configuration:
-    
+
     ```env
     URL=
     DB_NAME=
     DB_USER=
     DB_PWD=
+    R2_BUCKET_NAME=
+    R2_ACCOUNT_ID=
+    R2_ACCESS_KEY_ID=
+    R2_ACCESS_KEY_SECRET=
     ```
-    
+
     - Access API at: `http://localhost/api`
 
 3. **Setup Android App**
