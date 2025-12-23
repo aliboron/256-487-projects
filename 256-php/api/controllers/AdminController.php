@@ -1,18 +1,21 @@
 <?php
-include "db.php";
+
+require_once __DIR__ . '/GameController.php';
+require_once __DIR__ . '/UserController.php';
+
 class AdminController
 {
     private UserRepository $repository;
     private GameRepository $game_repository;
     private PDO $db;
 
-    public function __construct(PDO $db)
+    public function __construct()
     {
+        global $db;
         $this->db = $db;
         $this->repository = new UserRepository($db);
         $this->game_repository = new GameRepository($db);
     }
-
 
 
     #[Route('/admin', 'GET')]
@@ -21,6 +24,7 @@ class AdminController
         $approvedGames = array_map(fn(Game $g) => $g->toArray(), $this->game_repository->getAllApproved());
         return new ApiResponse(true, $approvedGames);
     }
+
     #[Route('/admin/developer/{developerId}', 'DELETE')]
     public function deleteDeveloper(int $developerId): ApiResponse
     {
@@ -33,6 +37,7 @@ class AdminController
         }
         return new ApiResponse(true, null, 'Developer deleted successfully');
     }
+
     #[Route('/admin/developer/{developerId}', 'PATCH')]
     public function deactivateDeveloper(int $developerId): ApiResponse
     {
@@ -48,6 +53,7 @@ class AdminController
 
         return new ApiResponse(true, $updatedDeveloper?->toArray());
     }
+
     #[Route('/admin/developer/{developerId}', 'GET')]
     public function getGamesByDeveloper(string $developerId): ApiResponse
     {
@@ -75,6 +81,7 @@ class AdminController
             return new ApiResponse(false, null, 'Failed to update game: ' . $e->getMessage());
         }
     }
+
     #[Route('/admin/games/{gameid}', 'PATCH')]
     public function approve(int $id): ?Game
     {
@@ -82,6 +89,7 @@ class AdminController
         $stmt->execute(['id' => $id]);
         return $this->game_repository->find($id);
     }
+
     #[Route('/admin/games/{gameid}', 'PATCH')]
     public function reject(int $id): ?Game
     {
@@ -89,6 +97,7 @@ class AdminController
         $stmt->execute(['id' => $id]);
         return $this->game_repository->find($id);
     }
+
     #[Route('/admin/games/{gameid}', 'DELETE')]
     public function deleteGame(string $id): ApiResponse
     {
