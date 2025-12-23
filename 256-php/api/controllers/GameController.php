@@ -312,6 +312,14 @@ class GameRepository
         return $this->find($id);
     }
 
+
+    public function reject(int $id): ?Game
+    {
+        $stmt = $this->db->prepare("UPDATE games SET is_approved = 0 WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $this->find($id);
+    }
+
     /**
      * Search games by name
      * @return Game[]

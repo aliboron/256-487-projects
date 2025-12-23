@@ -8,12 +8,12 @@ class AdminController
 
     public function __construct(PDO $db)
     {
-        $this->db = $db;
+        $this->db=$db;
         $this->repository = new UserRepository($db);
         $this->game_repository = new GameRepository($db);
     }
 
-
+    
 
     #[Route('/admin', 'GET')]
     public function listGames(): ApiResponse
@@ -21,24 +21,25 @@ class AdminController
         $approvedGames = array_map(fn(Game $g) => $g->toArray(), $this->game_repository->getAllApproved());
         return new ApiResponse(true, $approvedGames);
     }
-    #[Route('/admin/developer/{developerId}', 'DELETE')]
+     #[Route('/admin/developer/{developerId}', 'DELETE')]
     public function deleteDeveloper(int $developerId): ApiResponse
     {
         $developer = $this->repository->find($developerId);
         if (!$developer) {
-            return new ApiResponse(false, null, 'Developer not found');
+        return new ApiResponse(false, null, 'Developer not found');
+        
         }
         if (!$this->repository->deleteUser($developerId)) {
             return new ApiResponse(false, null, 'Delete failed');
         }
-        return new ApiResponse(true, null, 'Developer deleted successfully');
+        return new ApiResponse(true, null,'Developer deleted successfully');
     }
-    #[Route('/admin/developer/{developerId}', 'PATCH')]
+      #[Route('/admin/developer/{developerId}', 'PATCH')]
     public function deactivateDeveloper(int $developerId): ApiResponse
     {
         $developer = $this->repository->find($developerId);
         if (!$developer) {
-            return new ApiResponse(false, null, 'Developer not found');
+             return new ApiResponse(false, null, 'Developer not found');
         }
 
         if (!$this->repository->deactivateUser($developerId)) {
@@ -57,8 +58,8 @@ class AdminController
         );
         return new ApiResponse(true, $games);
     }
-
-    #[Route('/admin/games/{gameid}', 'PATCH')]
+    
+     #[Route('/admin/games/{gameid}', 'PATCH')]
     public function updateGame(string $id): ApiResponse
     {
         $input = json_decode(file_get_contents("php://input"), true) ?? [];
@@ -75,22 +76,22 @@ class AdminController
             return new ApiResponse(false, null, 'Failed to update game: ' . $e->getMessage());
         }
     }
-    #[Route('/admin/games/{gameid}', 'PATCH')]
+     #[Route('/admin/games/{gameid}', 'PATCH')]
     public function approve(int $id): ?Game
     {
         $stmt = $this->db->prepare("UPDATE games SET is_approved = 1 WHERE id = :id");
         $stmt->execute(['id' => $id]);
         return $this->game_repository->find($id);
     }
-    #[Route('/admin/games/{gameid}', 'PATCH')]
+     #[Route('/admin/games/{gameid}', 'PATCH')]
     public function reject(int $id): ?Game
     {
         $stmt = $this->db->prepare("UPDATE games SET is_approved = 0 WHERE id = :id");
         $stmt->execute(['id' => $id]);
         return $this->game_repository->find($id);
     }
-    #[Route('/admin/games/{gameid}', 'DELETE')]
-    public function deleteGame(string $id): ApiResponse
+     #[Route('/admin/games/{gameid}', 'DELETE')]
+     public function deleteGame(string $id): ApiResponse
     {
         $game = $this->repository->find((int)$id);
         if (!$game) {
@@ -107,3 +108,4 @@ class AdminController
         }
     }
 }
+?>
