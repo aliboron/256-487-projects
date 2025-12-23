@@ -76,6 +76,29 @@ POST http://localhost/api/users
 
 ---
 
+## Installing Dependencies
+
+The project uses Composer to manage PHP dependencies (such as AWS SDK, Guzzle, etc.).
+
+### Install Composer Packages
+
+Navigate to the API directory and run:
+
+```bash
+cd 256-487-projects/256-php/api
+composer install
+```
+
+This will:
+
+-   Install all dependencies listed in `composer.json`
+-   Create the `vendor/` directory with all required packages
+-   Generate the autoloader for class loading
+
+**Note**: The `vendor/` directory should not be committed to version control. It's listed in `.gitignore`.
+
+---
+
 ## Running the API
 
 ### 1. Start WAMP

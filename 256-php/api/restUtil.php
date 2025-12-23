@@ -92,6 +92,92 @@ class Endpoint
         $pattern = '@^' . preg_replace('@\{[^}]+\}@', '([^/]+)', $this->path) . '$@';
         return preg_match($pattern, $path) === 1;
     }
+
+    /**
+     * Invoke the handler with automatic parameter resolution from:
+     * - Path variables (e.g., /users/{id})
+     * - Query parameters (e.g., ?q=ali&page=2)
+     */
+    public function invoke(string $requestPath): mixed
+    {
+        // Get path variables
+        $pathVars = $this->extractVariables($requestPath);
+
+        // Get query parameters
+        $queryParams = $_GET;
+
+        // Check if any query parameter tries to override a path parameter
+        $conflicts = array_intersect_key($queryParams, $pathVars);
+        if (!empty($conflicts)) {
+            $conflictNames = implode(', ', array_keys($conflicts));
+            throw new InvalidArgumentException(
+                "Query parameters cannot override path parameters. Conflicting parameters: $conflictNames"
+            );
+        }
+
+        // Combine path and query parameters (path vars take precedence)
+        $allParams = array_merge($queryParams, $pathVars);
+
+        // Use reflection to get handler parameters
+        $reflection = $this->getReflection();
+        $params = $reflection->getParameters();
+
+        $args = [];
+        foreach ($params as $param) {
+            $paramName = $param->getName();
+            $paramType = $param->getType();
+
+            // Check if parameter value exists
+            if (array_key_exists($paramName, $allParams)) {
+                $value = $allParams[$paramName];
+
+                // Treat empty strings as null for nullable parameters
+                if ($paramType && $paramType->allowsNull() && $value === '') {
+                    $value = null;
+                }
+
+                // Type conversion (only if value is not null or type doesn't allow null)
+                if ($paramType && $value !== null) {
+                    $typeName = $paramType instanceof ReflectionNamedType ? $paramType->getName() : null;
+
+                    if ($typeName === 'int') {
+                        $value = (int) $value;
+                    } elseif ($typeName === 'float') {
+                        $value = (float) $value;
+                    } elseif ($typeName === 'bool') {
+                        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                    } elseif ($typeName === 'string') {
+                        $value = (string) $value;
+                    }
+                }
+
+                $args[] = $value;
+            } elseif ($param->isDefaultValueAvailable()) {
+                // Use default value (for optional parameters)
+                $args[] = $param->getDefaultValue();
+            } elseif ($paramType && $paramType->allowsNull()) {
+                // Nullable parameter without value
+                $args[] = null;
+            } else {
+                // Required parameter missing
+                throw new InvalidArgumentException("Missing required parameter: $paramName");
+            }
+        }
+
+        return call_user_func_array($this->handler, $args);
+    }
+
+    /**
+     * Get reflection of the handler method
+     */
+    private function getReflection(): ReflectionFunctionAbstract
+    {
+        if (is_array($this->handler)) {
+            return new ReflectionMethod($this->handler[0], $this->handler[1]);
+        } else {
+            return new ReflectionFunction($this->handler);
+        }
+    }
 }
 
 // ==========================================================

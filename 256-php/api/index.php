@@ -2,6 +2,7 @@
 
 require __DIR__ . '/restUtil.php';
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 // Create endpoint manager
 $manager = new EndpointManager();
@@ -24,12 +25,8 @@ if (!$endpoint) {
 }
 
 try {
-    $vars     = $endpoint->extractVariables($requestPath);
-    $handler  = $endpoint->getHandler();
-    $response = $handler(...array_values($vars));
-
-    http_response_code($response->success ? 200 : 400);
-    echo $response->toJson();
+    $result = $endpoint->invoke($requestPath);
+    echo $result->toJson();
 } catch (Throwable $e) {
     http_response_code(500);
     echo (new ApiResponse(false, null, "Server Error: " . $e->getMessage()))->toJson();

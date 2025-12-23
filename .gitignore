@@ -1,5 +1,7 @@
 *.local.*
 .env
+vendor/
+
 
 # Created by https://www.toptal.com/developers/gitignore/api/kotlin,android,androidstudio,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=kotlin,android,androidstudio,visualstudiocode
