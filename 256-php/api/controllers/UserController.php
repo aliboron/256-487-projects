@@ -25,7 +25,7 @@ class UserRepository
     private PDO $db;
     public function __construct(PDO $db)
     {
-        $this->db= $db;
+        $this->db = $db;
         $this->users = [
             '1' => new User('1', 'John'),
             '2' => new User('2', 'Jane'),
@@ -33,17 +33,17 @@ class UserRepository
         ];
         $this->db = $db;
     }
-    public function deactivateUser(int $id):bool
+    public function deactivateUser(int $id): bool
     {
         $stmt = $this->db->prepare("UPDATE users SET is_verified = 0 WHERE id = :id");
         $stmt->execute(['id' => $id]);
-        return $stmt->rowCount()>0;
+        return $stmt->rowCount() > 0;
     }
-    public function deleteUser(int $id):bool
+    public function deleteUser(int $id): bool
     {
         $stmt = $this->db->prepare("DELETE FROM USERS WHERE id = :id");
-        $stmt->execute(['id'=>$id]);
-        return $stmt->rowCount()>0;
+        $stmt->execute(['id' => $id]);
+        return $stmt->rowCount() > 0;
     }
     public function getAll(): array
     {
@@ -63,20 +63,6 @@ class UserRepository
         return $user;
     }
 
-    public function deactivateUser(int $id): bool
-    {
-        $stmt = $this->db->prepare("UPDATE users SET is_verified = 0 WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $stmt->rowCount() > 0;
-    }
-
-    public function deleteUser(int $id): bool
-    {
-        $stmt = $this->db->prepare("DELETE FROM USERS WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $stmt->rowCount() > 0;
-    }
-
     public function isUserVerified(int $userId): bool
     {
         $stmt = $this->db->prepare("
@@ -93,7 +79,7 @@ class UserRepository
 
 class UserController
 {
-    
+
     private UserRepository $repository;
 
     public function __construct()
@@ -117,7 +103,7 @@ class UserController
             ? new ApiResponse(true, $user->toArray())
             : new ApiResponse(false, null, 'User not found');
     }
-    
+
 
     #[Route('/users', 'POST')]
     public function createUser(): ApiResponse
