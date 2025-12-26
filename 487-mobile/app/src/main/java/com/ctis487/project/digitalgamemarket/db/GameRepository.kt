@@ -1,7 +1,9 @@
 package com.ctis487.project.digitalgamemarket.db
 
 import androidx.lifecycle.LiveData
+import androidx.room.Transaction
 import com.ctis487.project.digitalgamemarket.client.GameMarketApiService
+import com.ctis487.project.digitalgamemarket.model.ApiResponse
 import com.ctis487.project.digitalgamemarket.model.Game
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,7 +12,6 @@ class GameRepository(
     private val gameDAO: GameDAO,
     private val apiService: GameMarketApiService
 ) {
-
     // Local Database Operations
     val allGames: LiveData<List<Game>> = gameDAO.getAllGames()
     val approvedGames: LiveData<List<Game>> = gameDAO.getApprovedGames()
@@ -63,110 +64,56 @@ class GameRepository(
     }
 
     // API Operations
-    suspend fun fetchGamesFromApi(): Result<List<Game>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.getAllGames()
-                if (response.isSuccessful) {
-                    val apiResponse = response.body()
-                    if (apiResponse?.success == true && apiResponse.data != null) {
-                        // Optionally save to local database
-                        insertAll(apiResponse.data)
-                        Result.success(apiResponse.data)
-                    } else {
-                        Result.failure(Exception(apiResponse?.message ?: "Unknown error"))
-                    }
-                } else {
-                    Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
+    suspend fun fetchGamesFromApi(): Result<List<Game>> = withContext(Dispatchers.IO) {
+        val result = safeApiCall { apiService.getAllGames() }
+        result.onSuccess { insertAll(it) }
+        result
+    }
+
+    @Transaction
+    suspend fun fetchGameByIdFromApi(gameId: Int): Result<Game> = withContext(Dispatchers.IO) {
+        val result = safeApiCall { apiService.getGameById(gameId) }
+        result.onSuccess { insert(it) }
+        result
+    }
+
+    suspend fun fetchAllGamesIncludingUnapprovedFromApi(): Result<List<Game>> = withContext(Dispatchers.IO) {
+        safeApiCall { apiService.getAllGamesIncludingUnapproved() }
+    }
+
+    suspend fun createGameOnApi(game: Game): Result<Game> = withContext(Dispatchers.IO) {
+        val result = safeApiCall { apiService.createGame(game) }
+        result.onSuccess { insert(it) }
+        result
+    }
+
+    suspend fun updateGameOnApi(gameId: Int, game: Game): Result<Game> = withContext(Dispatchers.IO) {
+        val result = safeApiCall { apiService.updateGame(gameId, game) }
+        result.onSuccess { update(it) }
+        result
+    }
+
+    suspend fun searchGamesOnApi(query: String): Result<List<Game>> = withContext(Dispatchers.IO) {
+        safeApiCall { apiService.searchGames(query) }
+    }
+
+    private suspend fun <T> safeApiCall(block: suspend () -> retrofit2.Response<ApiResponse<T>>): Result<T> {
+        return try {
+            val response = block()
+            if (!response.isSuccessful) {
+                return Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
             }
+
+            val body = response.body()
+            if (body?.success == true && body.data != null) {
+                Result.success(body.data)
+            } else {
+                Result.failure(Exception(body?.message ?: "Unknown error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
-    suspend fun fetchAllGamesIncludingUnapprovedFromApi(): Result<List<Game>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.getAllGamesIncludingUnapproved()
-                if (response.isSuccessful) {
-                    val apiResponse = response.body()
-                    if (apiResponse?.success == true && apiResponse.data != null) {
-                        Result.success(apiResponse.data)
-                    } else {
-                        Result.failure(Exception(apiResponse?.message ?: "Unknown error"))
-                    }
-                } else {
-                    Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-    }
-
-    suspend fun createGameOnApi(game: Game): Result<Game> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.createGame(game)
-                if (response.isSuccessful) {
-                    val apiResponse = response.body()
-                    if (apiResponse?.success == true && apiResponse.data != null) {
-                        // Optionally save to local database
-                        insert(apiResponse.data)
-                        Result.success(apiResponse.data)
-                    } else {
-                        Result.failure(Exception(apiResponse?.message ?: "Unknown error"))
-                    }
-                } else {
-                    Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-    }
-
-    suspend fun updateGameOnApi(gameId: Int, game: Game): Result<Game> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.updateGame(gameId, game)
-                if (response.isSuccessful) {
-                    val apiResponse = response.body()
-                    if (apiResponse?.success == true && apiResponse.data != null) {
-                        // Update local database
-                        update(apiResponse.data)
-                        Result.success(apiResponse.data)
-                    } else {
-                        Result.failure(Exception(apiResponse?.message ?: "Unknown error"))
-                    }
-                } else {
-                    Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-    }
-
-    suspend fun searchGamesOnApi(query: String): Result<List<Game>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.searchGames(query)
-                if (response.isSuccessful) {
-                    val apiResponse = response.body()
-                    if (apiResponse?.success == true && apiResponse.data != null) {
-                        Result.success(apiResponse.data)
-                    } else {
-                        Result.failure(Exception(apiResponse?.message ?: "Unknown error"))
-                    }
-                } else {
-                    Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-    }
 }
 

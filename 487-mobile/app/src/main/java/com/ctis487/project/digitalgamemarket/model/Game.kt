@@ -11,15 +11,15 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 @Entity(
     tableName = "games",
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["id"],
-            childColumns = ["developer_id"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-    ],
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = User::class,
+//            parentColumns = ["id"],
+//            childColumns = ["developer_id"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        )
+//    ],
     indices = [
         Index(value = ["developer_id"]),
         Index(value = ["genre"]),

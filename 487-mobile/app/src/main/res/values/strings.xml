@@ -3,4 +3,5 @@
     <string name="editUsername">Username:\n</string>
     <string name="btnLogin">LOGIN\n</string>
     <string name="txtTitle">GAME MARKET</string>
+    <string name="txtCheckout">CHECKOUT</string>
 </resources>

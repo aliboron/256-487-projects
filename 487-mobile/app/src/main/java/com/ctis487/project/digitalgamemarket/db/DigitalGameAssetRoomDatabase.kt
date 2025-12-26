@@ -1,6 +1,7 @@
 package com.ctis487.project.digitalgamemarket.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -14,8 +15,7 @@ import com.ctis487.project.digitalgamemarket.model.*
         Checkout::class,
         GameMedia::class
     ],
-    version = 1,
-    exportSchema = false
+    version = 2
 )
 @TypeConverters(Converters::class)
 abstract class DigitalGameAssetRoomDatabase : RoomDatabase() {
@@ -24,22 +24,24 @@ abstract class DigitalGameAssetRoomDatabase : RoomDatabase() {
     abstract fun checkoutDAO(): CheckoutDAO
     abstract fun gameMediaDAO(): GameMediaDAO
 
-    companion object{
+    companion object {
         @Volatile
-        private var INSTANCE: DigitalGameAssetRoomDatabase?=null
+        private var INSTANCE: DigitalGameAssetRoomDatabase? = null
 
-        fun getDatabase(context:Context): DigitalGameAssetRoomDatabase {
+        fun getDatabase(context: Context): DigitalGameAssetRoomDatabase {
             val tempInstance = INSTANCE
-            if(tempInstance !=null){
-                return  tempInstance
+            if (tempInstance != null) {
+                return tempInstance
             }
 
-            synchronized(this){
-                val  instance =Room.databaseBuilder(
+            synchronized(this) {
+                val instance = Room.databaseBuilder(
                     context.applicationContext,
                     DigitalGameAssetRoomDatabase::class.java,
                     Utils.DATABASENAME
-                ).build()
+                )
+                    .fallbackToDestructiveMigration(true)
+                    .build()
                 INSTANCE = instance
                 return instance
             }
