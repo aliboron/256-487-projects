@@ -11,7 +11,7 @@
         android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/button2"
+        app:layout_constraintBottom_toTopOf="@+id/checkout_btnCancel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -101,7 +101,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/checkout_txtGameTitle" />
 
             <EditText
-                android:id="@+id/editTextText2"
+                android:id="@+id/editTextCardName"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_marginStart="32dp"
@@ -109,50 +109,55 @@
                 android:layout_marginEnd="32dp"
                 android:ems="10"
                 android:hint="Name on the card"
-                android:inputType="text"
+                android:inputType="textPersonName"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/checkout_txtGameDetails" />
 
             <EditText
-                android:id="@+id/editTextNumberDecimal"
+                android:id="@+id/editTextCardNumber"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
                 android:ems="10"
-                android:hint="Enter your card number"
-                android:inputType="numberDecimal"
+                android:hint="Card number (16 digits)"
+                android:inputType="text"
+                android:digits="0123456789 "
+                android:maxLength="19"
                 android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="@+id/editTextText2"
-                app:layout_constraintStart_toStartOf="@+id/editTextText2"
-                app:layout_constraintTop_toBottomOf="@+id/editTextText2" />
+                app:layout_constraintEnd_toEndOf="@+id/editTextCardName"
+                app:layout_constraintStart_toStartOf="@+id/editTextCardName"
+                app:layout_constraintTop_toBottomOf="@+id/editTextCardName" />
 
             <EditText
-                android:id="@+id/editTextDate"
+                android:id="@+id/editTextExpiryDate"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
                 android:ems="10"
-                android:hint="Exp. Date"
-                android:inputType="date"
+                android:hint="Exp. Date (MM/YY)"
+                android:inputType="text"
+                android:digits="0123456789/"
+                android:maxLength="5"
                 android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="@+id/editTextNumberDecimal"
-                app:layout_constraintStart_toStartOf="@+id/editTextNumberDecimal"
-                app:layout_constraintTop_toBottomOf="@+id/editTextNumberDecimal" />
+                app:layout_constraintEnd_toEndOf="@+id/editTextCardNumber"
+                app:layout_constraintStart_toStartOf="@+id/editTextCardNumber"
+                app:layout_constraintTop_toBottomOf="@+id/editTextCardNumber" />
 
             <EditText
-                android:id="@+id/editTextNumberPassword"
+                android:id="@+id/editTextCVC"
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_marginTop="12dp"
                 android:ems="10"
-                android:hint="CVC"
-                android:inputType="numberPassword"
+                android:hint="CVC (3 digits)"
+                android:inputType="number"
+                android:maxLength="3"
                 android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="@+id/editTextDate"
-                app:layout_constraintStart_toStartOf="@+id/editTextDate"
-                app:layout_constraintTop_toBottomOf="@+id/editTextDate" />
+                app:layout_constraintEnd_toEndOf="@+id/editTextExpiryDate"
+                app:layout_constraintStart_toStartOf="@+id/editTextExpiryDate"
+                app:layout_constraintTop_toBottomOf="@+id/editTextExpiryDate" />
 
             <TextView
                 android:id="@+id/textView6"
@@ -162,7 +167,7 @@
                 android:text="You are going to pay"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editTextNumberPassword" />
+                app:layout_constraintTop_toBottomOf="@+id/editTextCVC" />
 
             <TextView
                 android:id="@+id/checkout_txtGamePrice"
@@ -180,7 +185,7 @@
     </ScrollView>
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/checkout_btnCancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -191,14 +196,14 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/checkout_btnCheckout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:backgroundTint="#3F47B5"
         android:clickable="true"
         android:text="CHECKOUT"
-        app:layout_constraintBottom_toBottomOf="@+id/button2"
+        app:layout_constraintBottom_toBottomOf="@+id/checkout_btnCancel"
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

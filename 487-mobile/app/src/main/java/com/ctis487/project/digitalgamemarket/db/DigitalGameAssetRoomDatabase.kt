@@ -1,7 +1,6 @@
 package com.ctis487.project.digitalgamemarket.db
 
 import android.content.Context
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -40,6 +39,7 @@ abstract class DigitalGameAssetRoomDatabase : RoomDatabase() {
                     DigitalGameAssetRoomDatabase::class.java,
                     Utils.DATABASENAME
                 )
+                    .fallbackToDestructiveMigration(true)
                     .build()
                 INSTANCE = instance
                 return instance
