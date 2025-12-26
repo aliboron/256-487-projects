@@ -111,7 +111,7 @@ if (file_exists($requestedFile) && is_file($requestedFile)) {
 }
 
 // If file doesn't exist, load index.php (404 or home page)
-require $frontendDir . '/index.php';
+require $frontendDir . '/not-found.php';
 ```
 
 ### `www/.htaccess`
