@@ -8,19 +8,13 @@ This project contains a custom PHP REST API located under:
 www/256-487-projects/256-php/api/
 ```
 
-However, to expose the API cleanly at:
+The API is exposed at:
 
 ```
 http://localhost/api
 ```
 
-a lightweight wrapper folder is added directly under WAMP’s web root:
-
-```
-www/api/
-```
-
-This wrapper forwards all `/api/...` requests to the actual project API.
+using a centralized router at the web root that handles both API and frontend requests.
 
 ---
 
@@ -29,40 +23,111 @@ This wrapper forwards all `/api/...` requests to the actual project API.
 ```
 wamp64/www/
 │
-├── api/                          ← Public API endpoint (HTTP entry point)
-│   ├── index.php                 ← Forwards requests to the real API
-│   └── .htaccess                 ← Enables clean URLs (/api/users)
+├── index.php                     ← Centralized router (handles all requests)
+├── .htaccess                     ← Clean URLs + security rules
 │
 └── 256-487-projects/
     └── 256-php/
-        └── api/
-            ├── index.php         ← Real API router + controllers + logic
-            ├── src/              ← Your utilities, classes, repository, etc.
-            └── ...               ← Additional files
+        ├── api/
+        │   ├── index.php         ← API router + controllers + logic
+        │   ├── restUtil.php      ← REST utilities & base classes
+        │   └── controllers/      ← API controllers
+        │
+        └── frontend/
+            ├── index.php         ← Frontend home page
+            ├── login.php         ← Login page
+            └── admin.php         ← Admin dashboard
 ```
 
 ---
 
-## Wrapper `/www/api` Setup
+## Centralized Router Setup
 
-### `www/api/index.php`
+### `www/index.php`
 
 ```php
 <?php
-// Public wrapper entry point
-// This forwards all API requests to the real API folder
+// D:\Documents\wamp64\www\index.php - Centralized Router
 
-require __DIR__ . '/../256-487-projects/256-php/api/index.php';
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$uri = trim($uri, '/');
+
+// API Routes - anything starting with 'api/'
+if (strpos($uri, 'api/') === 0 || $uri === 'api') {
+    // Block dotfiles in API paths (security)
+    if (preg_match('/(^|\/)\./i', $uri)) {
+        http_response_code(403);
+        die('Forbidden');
+    }
+
+    // Fix SCRIPT_NAME so API routing works correctly
+    $_SERVER['SCRIPT_NAME'] = '/api/index.php';
+
+    require __DIR__ . '/256-487-projects/256-php/api/index.php';
+    exit;
+}
+
+// Frontend Routes
+$frontendDir = __DIR__ . '/256-487-projects/256-php/frontend';
+
+// If empty, load index.php
+if (empty($uri)) {
+    require $frontendDir . '/index.php';
+    exit;
+}
+
+// Check if the requested file exists in frontend directory
+$requestedFile = $frontendDir . '/' . $uri;
+
+if (file_exists($requestedFile) && is_file($requestedFile)) {
+    $ext = pathinfo($requestedFile, PATHINFO_EXTENSION);
+
+    // Handle PHP files
+    if ($ext === 'php') {
+        require $requestedFile;
+        exit;
+    }
+
+    // Handle static assets (CSS, JS, images, etc.)
+    $mimeTypes = [
+        'css' => 'text/css',
+        'js' => 'application/javascript',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'svg' => 'image/svg+xml',
+        'ico' => 'image/x-icon',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+    ];
+
+    if (isset($mimeTypes[$ext])) {
+        header('Content-Type: ' . $mimeTypes[$ext]);
+        readfile($requestedFile);
+        exit;
+    }
+}
+
+// If file doesn't exist, load index.php (404 or home page)
+require $frontendDir . '/index.php';
 ```
 
-### `www/api/.htaccess`
+### `www/.htaccess`
 
 ```apache
 RewriteEngine On
 
+# Allow Let's Encrypt challenges
+RewriteRule ^\.well-known/ - [L]
+
+# Block all dotfiles (includes .env)
+RewriteRule (^|/)\. - [F]
+
+# Route all requests to index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-
 RewriteRule ^ index.php [QSA,L]
 ```
 
@@ -72,6 +137,8 @@ This enables clean REST-style URLs like:
 GET http://localhost/api/users
 GET http://localhost/api/users/1
 POST http://localhost/api/users
+GET http://localhost/login.php
+GET http://localhost/admin.php
 ```
 
 ---
@@ -105,39 +172,42 @@ This will:
 
 Launch WAMP and ensure the server icon is **green**.
 
-### 2. Access the API
+### 2. Access the API and Frontend
 
 Open your browser and visit:
 
+**API endpoints:**
+
 ```
 http://localhost/api
+http://localhost/api/users
+http://localhost/api/users/3
 ```
 
-Example routes:
+**Frontend pages:**
 
 ```
-GET http://localhost/api/users
-GET http://localhost/api/users/3
-POST http://localhost/api/users
+http://localhost/
+http://localhost/login.php
+http://localhost/admin.php
 ```
 
 ---
 
 ## How Routing Works
 
-1. Browser hits `/api/...`
-2. Apache serves `www/api/index.php` because of `.htaccess`
-3. This index forwards the request to:
-
-```
-www/256-487-projects/256-php/api/index.php
-```
-
-4. The real router:
-    - parses the request method
-    - matches the URL path to Route attributes
-    - executes the appropriate controller
-    - returns JSON via `ApiResponse`
+1. Browser hits any URL (e.g., `/api/users` or `/login.php`)
+2. Apache's `.htaccess` rewrites all requests to `www/index.php`
+3. The centralized router:
+    - Checks if the path starts with `api/`
+        - If yes: sets `SCRIPT_NAME` and forwards to `256-487-projects/256-php/api/index.php`
+        - If no: routes to frontend files in `256-487-projects/256-php/frontend/`
+    - Serves PHP files, static assets (CSS, JS, images), or 404 pages
+4. The API router:
+    - Parses the request method
+    - Matches the URL path to Route attributes
+    - Executes the appropriate controller
+    - Returns JSON via `ApiResponse`
 
 ---
 
@@ -189,9 +259,10 @@ curl -X POST http://localhost/api/users   -H "Content-Type: application/json"   
 ## Notes
 
 -   No `httpd.conf` edits are required.
--   The wrapper folder keeps the project portable across different PCs.
--   All routing logic resides in the real API folder.
--   `.htaccess` enables clean URLs and prevents exposing internal folders.
+-   Single centralized router handles both API and frontend requests.
+-   All routing logic resides in the root `index.php`.
+-   `.htaccess` enables clean URLs, blocks dotfiles, and secures `.env` files.
+-   Static assets (CSS, JS, images) are served directly by the router.
 
 ---
 
@@ -199,7 +270,9 @@ curl -X POST http://localhost/api/users   -H "Content-Type: application/json"   
 
 This setup allows you to:
 
--   keep your real project inside a nested folder
--   expose a **clean and portable** endpoint at `/api`
--   avoid modifying Apache configs
--   support REST routing with clean URLs
+-   Keep your real project inside a nested folder
+-   Expose a **clean and portable** endpoint at `/api` and `/`
+-   Avoid modifying Apache configs
+-   Support REST routing with clean URLs
+-   Centralize all routing logic in one place
+-   Serve both API and frontend from a single entry point

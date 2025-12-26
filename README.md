@@ -106,10 +106,18 @@ This project implements a digital game marketplace platform where users can brow
     - Create a `.env` file in `256-php/api/.env` with the following configuration:
 
     ```env
-    URL=
+    CLIENT_URL=
+
+    # AUTH
+    SESSION_TIMEOUT=
+
+    # DB
+    DB_URL=
     DB_NAME=
     DB_USER=
     DB_PWD=
+
+    # R2
     R2_BUCKET_NAME=
     R2_ACCOUNT_ID=
     R2_ACCESS_KEY_ID=
