@@ -15,7 +15,7 @@ import com.ctis487.project.digitalgamemarket.model.*
         Checkout::class,
         GameMedia::class
     ],
-    version = 2
+    version = 1
 )
 @TypeConverters(Converters::class)
 abstract class DigitalGameAssetRoomDatabase : RoomDatabase() {
@@ -40,7 +40,6 @@ abstract class DigitalGameAssetRoomDatabase : RoomDatabase() {
                     DigitalGameAssetRoomDatabase::class.java,
                     Utils.DATABASENAME
                 )
-                    .fallbackToDestructiveMigration(true)
                     .build()
                 INSTANCE = instance
                 return instance
