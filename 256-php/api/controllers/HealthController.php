@@ -1,5 +1,5 @@
 <?php
-
+requireAuth();
 class HealthController
 {
     #[Route('/', 'GET')]
