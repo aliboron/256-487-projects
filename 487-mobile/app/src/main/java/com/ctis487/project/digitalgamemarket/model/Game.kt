@@ -43,7 +43,7 @@ data class Game(
 
     @SerializedName("is_approved")
     @ColumnInfo(name = "is_approved")
-    val isApproved: Boolean = false,
+    val isApproved: Int = 0,
 
     @SerializedName("logo_path")
     @ColumnInfo(name = "logo_path")
