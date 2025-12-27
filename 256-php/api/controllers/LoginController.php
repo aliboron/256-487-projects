@@ -1,0 +1,113 @@
+<?php
+
+class LoginController
+{
+    private PDO $db;
+
+    public function __construct()
+    {
+        global $db;
+        $this->db = $db;
+    }
+
+    /* ================= LOGIN ================= */
+    #[Route("/login", "POST")]
+    public function login()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $username = $data['username'] ?? '';
+        $password = $data['password'] ?? '';
+
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user || !password_verify($password, $user['password'])) {
+            http_response_code(401);
+            echo json_encode(["message" => "Invalid credentials"]);
+            return;
+        }
+
+        $token = $this->createToken($user['id']);
+
+        $_SESSION["role"] = $user["type"];
+
+        return new ApiResponse(true, ["token" => $token], "Login successfull");
+    }
+
+    #[Route("/register", "POST")]
+    /* ================= REGISTER ================= */
+    public function register()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        $username = $data['username'] ?? '';
+        $email = $data['email'] ?? '';
+        $phone = $data['phone'] ?? '';
+        $gender = $data['gender'] ?? '';
+        $password = $data['password'] ?? '';
+        $role = $data['type'] ?? '';
+        $birth_date = $data["birth_date"] ?? '';
+
+        if ($role !== 'game_developer' && $role !== 'user')
+        {
+            return new ApiResponse(false, null, "Invalid login options.");
+        }
+
+        // unique user check
+        $check = $this->db->prepare("SELECT id FROM users WHERE username = ?");
+        $check->execute([$username]);
+        if ($check->fetch()) {
+            http_response_code(409);
+            return new ApiResponse(false, null, "User already exists");
+        }
+
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        $stmt = $this->db->prepare(
+            "INSERT INTO users (username, email, gender, phone, birth_date, password, type) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->execute([$username, $email, $gender, $phone, $birth_date, $hashedPassword, $role]);
+
+        $userId = $this->db->lastInsertId();
+        $token = $this->createToken($userId);
+        
+
+        $_SESSION["role"] = $role;
+
+        return new ApiResponse(true, [
+            "redirect" => "/",
+            "token" => $token
+        ], "Register successfull");
+    }
+
+    #[Route("/login/guest", "POST")]
+    /* ================= GUEST ================= */
+    public function guest()
+    {
+        // Guest kullanıcı DB’ye yazılmak zorunda değil
+        $token = bin2hex(random_bytes(32));
+
+        $_SESSION["role"] = "guest";
+
+        return new ApiResponse(true, ["token" => $token], "Guest login successfull");
+    }
+
+    #[Route("/logout", "POST")]
+    /* ================= LOGOUT ================= */
+    public function logout()
+    {
+        logout();
+
+        return new ApiResponse(true, null, "Logout successfull");
+    }
+
+   
+
+    /* ================= TOKEN ================= */
+    private function createToken(int $userId): string
+    {
+        $token = session_id();
+        return $token;
+    }
+}
