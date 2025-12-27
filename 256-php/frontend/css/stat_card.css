@@ -1,0 +1,57 @@
+/* Stat Card Component Styles */
+
+.stats-section {
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background-color: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    border-color: #3a3a3a;
+    transform: translateY(-2px);
+}
+
+.stat-icon-circle {
+    width: 60px;
+    height: 60px;
+    background-color: #2a2a2a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    transition: all 0.3s ease;
+}
+
+.stat-icon-circle i {
+    font-size: 1.5rem;
+    color: #4caf50;
+}
+
+.stat-card:hover .stat-icon-circle {
+    background-color: #4caf50;
+}
+
+.stat-card:hover .stat-icon-circle i {
+    color: #ffffff;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #4caf50;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #a0a0a0;
+    font-size: 0.9rem;
+}

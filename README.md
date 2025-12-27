@@ -101,6 +101,8 @@ This project implements a digital game marketplace platform where users can brow
         ```bash
         cd 256-php/api
         composer install
+        cd ../frontend
+        composer install
         ```
     - Configure the API wrapper at `www/api/`
     - Create a `.env` file in `256-php/api/.env` with the following configuration:

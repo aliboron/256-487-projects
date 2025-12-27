@@ -4,6 +4,13 @@
     <string name="btnLogin">LOGIN\n</string>
     <string name="txtTitle">GAME MARKET</string>
     <string name="txtCheckout">CHECKOUT</string>
+    <string name="btnLibrary">Go to Library</string>
+    <string name="boughtDateTv">Bought at xx/xx/20xx</string>
+    <string name="gameNameTvDummy">Cyberpunk 2077</string>
+    <string name="txtLibraryTitle">Users Library</string>
+    <string name="txtLibraryDetails">Your all games:</string>
+    <string name="btnReturn">Return</string>
+    <string name="boughtDateStart">Bought at </string>
 
     <!-- Checkout Activity -->
     <string name="hint_card_name">Name on the card</string>

@@ -3,12 +3,17 @@ package com.ctis487.project.digitalgamemarket.db
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.ctis487.project.digitalgamemarket.model.Game
+import okhttp3.Callback
+import retrofit2.Call
 
 @Dao
 interface GameDAO {
 
     @Query("SELECT * FROM games ORDER BY created_at DESC")
     fun getAllGames(): LiveData<List<Game>>
+
+    @Query("SELECT * FROM games ORDER BY created_at DESC")
+    fun getAllGamesDirect(): List<Game>
 
     @Query("SELECT * FROM games WHERE id = :gameId")
     fun getGameById(gameId: Int): LiveData<Game>
