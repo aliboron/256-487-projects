@@ -13,8 +13,11 @@ import com.ctis487.project.digitalgamemarket.client.ApiClient
 import com.ctis487.project.digitalgamemarket.client.GameMarketApiService
 import com.ctis487.project.digitalgamemarket.custom.CustomUserView
 import com.ctis487.project.digitalgamemarket.databinding.ActivityLoginBinding
+import com.ctis487.project.digitalgamemarket.db.Utils
 import com.ctis487.project.digitalgamemarket.model.LoginApiRequest
 import com.ctis487.project.digitalgamemarket.model.LoginRequest
+import com.ctis487.project.digitalgamemarket.model.LoginResponseDto
+import com.ctis487.project.digitalgamemarket.model.User
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -49,6 +52,7 @@ class LoginActivity : AppCompatActivity() {
                     if (response.isSuccessful && response.body()?.success == true) {
 
                         Toast.makeText(this@LoginActivity,"Login successful", Toast.LENGTH_LONG).show()
+                        Utils.user= response.body()?.data
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)
                         finish()

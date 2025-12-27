@@ -142,7 +142,7 @@ interface GameMarketApiService {
     @POST("/api/login")
     suspend fun login(
         @Body request: LoginApiRequest
-    ): Response<ApiResponse<LoginApiRequest>>
+    ): Response<ApiResponse<LoginResponseDto>>
 
 
 
