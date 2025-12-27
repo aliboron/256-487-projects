@@ -21,17 +21,16 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Set current language selection
+
         val currentLang = LocaleHelper.getLanguage(this)
         when (currentLang) {
             "en" -> binding.radioEnglish.isChecked = true
             "tr" -> binding.radioTurkish.isChecked = true
         }
 
-        // Update current language text
         updateCurrentLanguageText(currentLang)
 
-        // Handle radio group selection changes
+
         binding.radioGroupLanguage.setOnCheckedChangeListener { _, checkedId ->
             val selectedLang = when (checkedId) {
                 R.id.radioEnglish -> "en"
@@ -41,7 +40,7 @@ class SettingsActivity : AppCompatActivity() {
             updateCurrentLanguageText(selectedLang)
         }
 
-        // Apply language button
+
         binding.btnApplyLanguage.setOnClickListener {
             val selectedLang = when (binding.radioGroupLanguage.checkedRadioButtonId) {
                 R.id.radioEnglish -> "en"

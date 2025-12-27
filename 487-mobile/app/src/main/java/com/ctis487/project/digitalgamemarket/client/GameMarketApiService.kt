@@ -135,10 +135,7 @@ interface GameMarketApiService {
     @DELETE("/api/checkouts/{id}")
     suspend fun deleteCheckout(@Path("id") checkoutId: Int): Response<ApiResponse<Unit>>
 
-    // Game Media Endpoints (Developer uploads via multipart, not JSON)
-    // Note: Media upload requires multipart/form-data, handled separately
-    // @POST("/api/developers/{developerId}/games/{gameId}/assets")
-    // suspend fun uploadGameAsset(...)
+
     @POST("/api/login")
     suspend fun login(
         @Body request: LoginApiRequest

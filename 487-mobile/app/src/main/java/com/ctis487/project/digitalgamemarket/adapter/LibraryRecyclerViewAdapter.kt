@@ -40,12 +40,6 @@ class LibraryRecyclerViewAdapter(private val context: Context, private var recyc
             .centerCrop()
             .into(myRecyclerViewItemHolder.tvItemImg)
 
-
-        /*
-        myRecyclerViewItemHolder.tvItemCustomerId.text = item.id.toString()
-        myRecyclerViewItemHolder.tvItemCustomerName.text = item.name
-        myRecyclerViewItemHolder.tvItemCustomerQuantity.text = item.surname + ""
-        */
     }
 
 
