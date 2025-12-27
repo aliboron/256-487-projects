@@ -10,4 +10,14 @@ class HealthController
             'API is up and running'
         );
     }
+
+    #[Route('/forbidden', 'GET')]
+    public function forbidden(): ApiResponse
+    {
+        return new ApiResponse(
+            true,
+            ['status' => 'forbidden'],
+            'Access is forbidden'
+        );
+    }
 }

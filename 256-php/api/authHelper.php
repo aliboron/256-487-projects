@@ -32,9 +32,10 @@ function requireAuth()
     }
 }
 
-function requireRole($user_role, $required_role) {
+function requireRole($user_role, $required_role)
+{
     if ($user_role !== $required_role) {
-        header('Location: ' . $_ENV['CLIENT_URL'] . '/not-found.php');
+        header($_SERVER["SERVER_PROTOCOL"] . ' 403 Forbidden');
         exit();
     }
 }
@@ -50,4 +51,15 @@ function logout()
 {
     session_unset();
     session_destroy();
+}
+
+// ==========================================================
+//  Authorize Attribute
+// ==========================================================
+#[\Attribute(\Attribute::TARGET_CLASS)]
+class Authorize
+{
+    public function __construct(
+        public string $role
+    ) {}
 }

@@ -3,8 +3,7 @@
 require_once __DIR__ . '/GameController.php';
 require_once __DIR__ . '/UserController.php';
 
-requireRole($_SESSION['role'], "admin");
-
+#[Authorize('admin')]
 class AdminController
 {
     private UserRepository $repository;
