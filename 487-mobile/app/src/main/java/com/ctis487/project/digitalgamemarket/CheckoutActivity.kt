@@ -15,6 +15,7 @@ import com.ctis487.project.digitalgamemarket.client.GameMarketApiService
 import com.ctis487.project.digitalgamemarket.databinding.ActivityCheckoutBinding
 import com.ctis487.project.digitalgamemarket.db.DigitalGameAssetRoomDatabase
 import com.ctis487.project.digitalgamemarket.db.GameRepository
+import com.ctis487.project.digitalgamemarket.db.Utils
 import com.ctis487.project.digitalgamemarket.model.Checkout
 import com.ctis487.project.digitalgamemarket.model.Game
 import kotlinx.coroutines.Dispatchers
@@ -187,8 +188,11 @@ class CheckoutActivity : AppCompatActivity() {
             return
         }
 
-        // TODO: Get actual user ID from session/preferences
-        val userId = 1
+        val userId = Utils.user?.user?.id
+        if (userId == null) {
+            Toast.makeText(this, "User information not loaded", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         // Create checkout object
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())

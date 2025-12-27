@@ -1,0 +1,120 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #0f0f0f;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, sans-serif;
+}
+
+.card {
+    background-color: #1a1a1a;
+    border: 1px solid #2a2a2a;
+}
+
+.card-body {
+    color: #ffffff;
+}
+
+.card-body h2 {
+    color: #ffffff;
+}
+
+.form-label {
+    color: #a0a0a0;
+}
+
+.form-control {
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #ffffff;
+}
+
+.form-control:focus {
+    background-color: #2a2a2a;
+    border-color: #4a4a4a;
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(74, 74, 74, 0.25);
+}
+
+.form-control::placeholder {
+    color: #606060;
+}
+
+.form-check-input {
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+}
+
+.form-check-input:checked {
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+
+.form-check-input:focus {
+    border-color: #4a4a4a;
+    box-shadow: 0 0 0 0.2rem rgba(74, 74, 74, 0.25);
+}
+
+.form-check-label {
+    color: #a0a0a0;
+}
+
+.nav-pills .nav-link {
+    color: #a0a0a0;
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    transition: all 0.3s;
+}
+
+.nav-pills .nav-link:hover {
+    color: #ffffff;
+    background-color: #3a3a3a;
+}
+
+.nav-pills .nav-link.active {
+    color: #ffffff;
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+
+.btn-primary {
+    background-color: #4caf50;
+    border-color: #4caf50;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}
+
+.btn-success {
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+
+.btn-success:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}
+
+.btn-outline-secondary {
+    color: #a0a0a0;
+    border-color: #3a3a3a;
+    background-color: transparent;
+}
+
+.btn-outline-secondary:hover {
+    color: #ffffff;
+    background-color: #3a3a3a;
+    border-color: #4a4a4a;
+}
+
+.text-muted {
+    color: #808080 !important;
+}

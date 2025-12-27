@@ -1,0 +1,407 @@
+<?php
+// Sample data - will be replaced with API calls later
+$pendingGames = [
+    [
+        'id' => 101,
+        'name' => 'Cyber Quest 2077',
+        'developer' => 'TechStudio',
+        'logo_path' => 'https://via.placeholder.com/60x80/2a2a2a/ffffff?text=CQ',
+        'genre' => 'RPG',
+        'price' => 49.99,
+        'submitted_date' => '2025-12-20'
+    ],
+    [
+        'id' => 102,
+        'name' => 'Space Raiders',
+        'developer' => 'GalaxyGames',
+        'logo_path' => 'https://via.placeholder.com/60x80/2a2a2a/ffffff?text=SR',
+        'genre' => 'Shooter',
+        'price' => 29.99,
+        'submitted_date' => '2025-12-22'
+    ]
+];
+
+$approvedGames = [
+    [
+        'id' => 1,
+        'name' => 'The Last of Us Part II',
+        'developer' => 'Naughty Dog',
+        'logo_path' => 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg',
+        'genre' => 'Action',
+        'price' => 59.99,
+        'status' => 'active'
+    ],
+    [
+        'id' => 2,
+        'name' => 'God of War',
+        'developer' => 'Santa Monica Studio',
+        'logo_path' => 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg',
+        'genre' => 'Action',
+        'price' => 49.99,
+        'status' => 'active'
+    ]
+];
+
+$developers = [
+    [
+        'id' => 1,
+        'username' => 'TechStudio',
+        'email' => 'contact@techstudio.com',
+        'games_count' => 5,
+        'status' => 'active',
+        'joined_date' => '2024-01-15'
+    ],
+    [
+        'id' => 2,
+        'username' => 'GalaxyGames',
+        'email' => 'info@galaxygames.com',
+        'games_count' => 3,
+        'status' => 'active',
+        'joined_date' => '2024-03-20'
+    ]
+];
+
+$activeSection = $_GET['section'] ?? 'dashboard';
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTIS256 - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/admin_sidebar.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <h4><i class="fa-solid fa-shield-halved"></i> Admin Panel</h4>
+                <p>Game Store Management</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="?section=dashboard" class="sidebar-menu-link <?php echo $activeSection === 'dashboard' ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="?section=pending-games" class="sidebar-menu-link <?php echo $activeSection === 'pending-games' ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Pending Games</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="?section=approved-games" class="sidebar-menu-link <?php echo $activeSection === 'approved-games' ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Approved Games</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="?section=developers" class="sidebar-menu-link <?php echo $activeSection === 'developers' ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Developers</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="?section=all-games" class="sidebar-menu-link <?php echo $activeSection === 'all-games' ? 'active' : ''; ?>">
+                        <i class="fa-solid fa-gamepad"></i>
+                        <span>All Games</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="index.php" class="btn btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Exit Admin</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Dashboard Section -->
+            <?php if ($activeSection === 'dashboard'): ?>
+                <div class="admin-header">
+                    <h1>Dashboard</h1>
+                    <p>Welcome to the admin panel. Here's an overview of your game store.</p>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-number"><?php echo count($pendingGames); ?></div>
+                        <div class="stat-box-label">Pending Approvals</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-number"><?php echo count($approvedGames); ?></div>
+                        <div class="stat-box-label">Approved Games</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-number"><?php echo count($developers); ?></div>
+                        <div class="stat-box-label">Active Developers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-number"><?php echo count($approvedGames) + count($pendingGames); ?></div>
+                        <div class="stat-box-label">Total Games</div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-bell"></i>
+                        Recent Activity
+                    </h2>
+                    <p style="color: #a0a0a0;">You have <?php echo count($pendingGames); ?> games waiting for approval.</p>
+                </div>
+            <?php endif; ?>
+
+            <!-- Pending Games Section -->
+            <?php if ($activeSection === 'pending-games'): ?>
+                <div class="admin-header">
+                    <h1>Pending Game Approvals</h1>
+                    <p>Review and approve or reject newly submitted games.</p>
+                </div>
+
+                <div class="section-card">
+                    <?php if (empty($pendingGames)): ?>
+                        <div class="empty-state">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <h3>No Pending Games</h3>
+                            <p>All games have been reviewed!</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Game</th>
+                                    <th>Name</th>
+                                    <th>Developer</th>
+                                    <th>Genre</th>
+                                    <th>Price</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($pendingGames as $game): ?>
+                                    <tr>
+                                        <td><img src="<?php echo htmlspecialchars($game['logo_path']); ?>" alt="<?php echo htmlspecialchars($game['name']); ?>" class="game-thumbnail"></td>
+                                        <td style="color: #ffffff;"><?php echo htmlspecialchars($game['name']); ?></td>
+                                        <td><?php echo htmlspecialchars($game['developer']); ?></td>
+                                        <td><?php echo htmlspecialchars($game['genre']); ?></td>
+                                        <td style="color: #4CAF50;">$<?php echo number_format($game['price'], 2); ?></td>
+                                        <td><?php echo date('M d, Y', strtotime($game['submitted_date'])); ?></td>
+                                        <td>
+                                            <button class="btn-action btn-approve"><i class="fa-solid fa-check"></i> Approve</button>
+                                            <button class="btn-action btn-reject"><i class="fa-solid fa-times"></i> Reject</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Approved Games Section -->
+            <?php if ($activeSection === 'approved-games'): ?>
+                <div class="admin-header">
+                    <h1>Approved Games</h1>
+                    <p>Manage all approved games in the store.</p>
+                </div>
+
+                <div class="section-card">
+                    <?php if (empty($approvedGames)): ?>
+                        <div class="empty-state">
+                            <i class="fa-solid fa-gamepad"></i>
+                            <h3>No Approved Games</h3>
+                            <p>No games have been approved yet.</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Game</th>
+                                    <th>Name</th>
+                                    <th>Developer</th>
+                                    <th>Genre</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($approvedGames as $game): ?>
+                                    <tr>
+                                        <td><img src="<?php echo htmlspecialchars($game['logo_path']); ?>" alt="<?php echo htmlspecialchars($game['name']); ?>" class="game-thumbnail"></td>
+                                        <td style="color: #ffffff;"><?php echo htmlspecialchars($game['name']); ?></td>
+                                        <td><?php echo htmlspecialchars($game['developer']); ?></td>
+                                        <td><?php echo htmlspecialchars($game['genre']); ?></td>
+                                        <td style="color: #4CAF50;">$<?php echo number_format($game['price'], 2); ?></td>
+                                        <td><span class="badge badge-success"><?php echo ucfirst($game['status']); ?></span></td>
+                                        <td>
+                                            <button class="btn-action btn-edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                                            <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Developers Section -->
+            <?php if ($activeSection === 'developers'): ?>
+                <div class="admin-header">
+                    <h1>Game Developers</h1>
+                    <p>Manage game developer accounts and their games.</p>
+                </div>
+
+                <div class="section-card">
+                    <?php if (empty($developers)): ?>
+                        <div class="empty-state">
+                            <i class="fa-solid fa-users"></i>
+                            <h3>No Developers</h3>
+                            <p>No developers have registered yet.</p>
+                        </div>
+                    <?php else: ?>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Games Published</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($developers as $dev): ?>
+                                    <tr>
+                                        <td style="color: #ffffff;"><i class="fa-solid fa-user"></i> <?php echo htmlspecialchars($dev['username']); ?></td>
+                                        <td><?php echo htmlspecialchars($dev['email']); ?></td>
+                                        <td><?php echo $dev['games_count']; ?> games</td>
+                                        <td><span class="badge badge-success"><?php echo ucfirst($dev['status']); ?></span></td>
+                                        <td><?php echo date('M d, Y', strtotime($dev['joined_date'])); ?></td>
+                                        <td>
+                                            <button class="btn-action btn-view"><i class="fa-solid fa-eye"></i> View Games</button>
+                                            <button class="btn-action btn-deactivate"><i class="fa-solid fa-ban"></i> Deactivate</button>
+                                            <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- All Games Section -->
+            <?php if ($activeSection === 'all-games'): ?>
+                <div class="admin-header">
+                    <h1>All Games</h1>
+                    <p>View and manage all games in the system.</p>
+                </div>
+
+                <div class="section-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Game</th>
+                                <th>Name</th>
+                                <th>Developer</th>
+                                <th>Genre</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach (array_merge($approvedGames, $pendingGames) as $game): ?>
+                                <tr>
+                                    <td><img src="<?php echo htmlspecialchars($game['logo_path']); ?>" alt="<?php echo htmlspecialchars($game['name']); ?>" class="game-thumbnail"></td>
+                                    <td style="color: #ffffff;"><?php echo htmlspecialchars($game['name']); ?></td>
+                                    <td><?php echo htmlspecialchars($game['developer']); ?></td>
+                                    <td><?php echo htmlspecialchars($game['genre']); ?></td>
+                                    <td style="color: #4CAF50;">$<?php echo number_format($game['price'], 2); ?></td>
+                                    <td>
+                                        <?php if (isset($game['status'])): ?>
+                                            <span class="badge badge-success"><?php echo ucfirst($game['status']); ?></span>
+                                        <?php else: ?>
+                                            <span class="badge badge-warning">Pending</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <button class="btn-action btn-edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                                        <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </main>
+    </div>
+
+    <script src="vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add confirmation for delete actions
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+                    // Handle delete action
+                    console.log('Delete confirmed');
+                }
+            });
+        });
+
+        // Add confirmation for deactivate actions
+        document.querySelectorAll('.btn-deactivate').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to deactivate this developer account?')) {
+                    // Handle deactivate action
+                    console.log('Deactivate confirmed');
+                }
+            });
+        });
+
+        // Handle approve/reject actions
+        document.querySelectorAll('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (confirm('Approve this game for publication?')) {
+                    // Handle approve action
+                    console.log('Game approved');
+                    this.closest('tr').style.backgroundColor = '#1b4d1b';
+                    setTimeout(() => {
+                        this.closest('tr').remove();
+                    }, 1000);
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (confirm('Reject this game? The developer will be notified.')) {
+                    // Handle reject action
+                    console.log('Game rejected');
+                    this.closest('tr').style.backgroundColor = '#4d1b1b';
+                    setTimeout(() => {
+                        this.closest('tr').remove();
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
