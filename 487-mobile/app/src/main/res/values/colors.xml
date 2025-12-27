@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="brand_indigo">#171a21</color>
+    <color name="brand_indigo_dark">#000000</color>
+
+    <color name="brand_green">#a4d007</color>
+
+    <color name="brand_red">#c93a3a</color>
+
+    <color name="steam_bg_main">#1b2838</color>
+
+    <color name="steam_card_surface">#E8E9EB</color>
+
+    <color name="steam_accent_blue">#66c0f4</color> <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#8F98A0</color> <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

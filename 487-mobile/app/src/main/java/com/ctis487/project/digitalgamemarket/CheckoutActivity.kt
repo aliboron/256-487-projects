@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.ctis487.project.digitalgamemarket.client.ApiClient
@@ -21,6 +22,8 @@ import com.ctis487.project.digitalgamemarket.model.Game
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import www.sanju.motiontoast.MotionToast
+import www.sanju.motiontoast.MotionToastStyle
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,6 +36,7 @@ class CheckoutActivity : AppCompatActivity() {
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.setLocale(newBase, LocaleHelper.getLanguage(newBase)))
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -212,11 +216,15 @@ class CheckoutActivity : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful && response.body()?.success == true) {
-                        Toast.makeText(
-                            this@CheckoutActivity,
-                            getString(R.string.toast_checkout_success, game.name),
-                            Toast.LENGTH_LONG
-                        ).show()
+                        MotionToast.setSuccessBackgroundColor(com.google.android.material.R.color.design_default_color_primary)
+                        MotionToast.createToast(this@CheckoutActivity,
+                            "Hurray success 😍",
+                            "Upload Completed successfully!",
+                            MotionToastStyle.SUCCESS,
+                            MotionToast.GRAVITY_BOTTOM,
+                            MotionToast.LONG_DURATION,
+                            ResourcesCompat.getFont(this@CheckoutActivity, www.sanju.motiontoast.R.font.helvetica_regular))
+
                         finish()
                     } else {
                         Toast.makeText(
@@ -234,6 +242,8 @@ class CheckoutActivity : AppCompatActivity() {
                         getString(R.string.toast_checkout_error, e.message),
                         Toast.LENGTH_LONG
                     ).show()
+
+
                 }
             }
         }

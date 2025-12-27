@@ -1,5 +1,6 @@
 package com.ctis487.project.digitalgamemarket
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
@@ -36,6 +37,10 @@ class LibraryActivity : AppCompatActivity() {
     var userGames = ArrayList<Game>()
     var recItems = ArrayList<LibItem>()
     private val db by lazy { DigitalGameAssetRoomDatabase.getDatabase(this) }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, LocaleHelper.getLanguage(newBase)))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +108,9 @@ class LibraryActivity : AppCompatActivity() {
             }
         }
 
+        binding.btnReturn.setOnClickListener {
+            finish()
+        }
 
     }
 

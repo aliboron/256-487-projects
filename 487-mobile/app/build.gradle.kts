@@ -91,4 +91,7 @@ dependencies {
     // Worker
     val worker_version = "2.9.0"
     implementation("androidx.work:work-runtime-ktx:$worker_version")
+
+    implementation("com.github.Spikeysanju:MotionToast:1.4")
 }
+
