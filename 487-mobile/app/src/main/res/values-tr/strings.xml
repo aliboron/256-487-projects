@@ -5,6 +5,12 @@
     <string name="btnLogin">GİRİŞ YAP\n</string>
     <string name="txtTitle">OYUN MARKETİ</string>
     <string name="txtCheckout">ÖDEME</string>
+    <string name="boughtDateTv">Alış: xx/xx/20xx</string>
+    <string name="gameNameTvDummy">Cyberpunk 2077</string>
+    <string name="txtLibraryTitle">Kullanıcın Kütüphanesi</string>
+    <string name="txtLibraryDetails">Tüm oyunlarınız:</string>
+    <string name="btnReturn">Geri Dön</string>
+    <string name="btnLibrary">Kütüphanene Git</string>
 
     <!-- Checkout Activity -->
     <string name="hint_card_name">Kart üzerindeki isim</string>

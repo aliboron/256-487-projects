@@ -11,45 +11,56 @@
         android:id="@+id/btnSettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/btn_settings"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="15dp"
         android:backgroundTint="#3F51B5"
-        android:textSize="16sp"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
+        android:text="@string/btn_settings"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/btnCheckout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintEnd_toEndOf="@+id/btnCheckout" />
 
     <Button
         android:id="@+id/btnCheckout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/btn_go_to_checkout"
         android:backgroundTint="#3F51B5"
-        android:textSize="16sp"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnLanguage"
+        android:text="@string/btn_go_to_checkout"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSettings" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnLibrary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="17dp"
+        android:backgroundTint="#3F51B5"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:text="@string/btnLibrary"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/btnCheckout"
+        app:layout_constraintTop_toBottomOf="@+id/btnCheckout" />
 
     <Button
         android:id="@+id/btnLanguage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/btn_language"
+        android:layout_marginTop="9dp"
+        android:layout_marginEnd="24dp"
         android:backgroundTint="#3F51B5"
-        android:textSize="16sp"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnCheckout" />
+        android:text="@string/btn_language"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/btnLibrary"
+        app:layout_constraintTop_toBottomOf="@+id/btnLibrary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
