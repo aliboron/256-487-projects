@@ -47,7 +47,7 @@ $gameData = $game ?? [];
                 <!-- Store view: Show price and buy button -->
                 <div class="game-footer">
                     <div class="game-price"><i class="fa-solid fa-dollar-sign"></i><?php echo number_format($gameData['price'], 2); ?></div>
-                    <button class="btn btn-add-cart"><i class="fa-solid fa-cart-shopping"></i> Buy Game</button>
+                    <a href="checkout.php?game_id=<?php echo $gameData['id']; ?>" class="btn btn-add-cart"><i class="fa-solid fa-cart-shopping"></i> Buy Game</a>
                 </div>
             <?php endif; ?>
         </div>
