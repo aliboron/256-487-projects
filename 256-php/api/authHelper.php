@@ -1,8 +1,13 @@
 <?php
 require_once __DIR__ . '/env.php';
 
-session_start();
-session_regenerate_id(true);
+// Start session only if not already started
+function ensureSession()
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+}
 
 function checkSessionTimeout()
 {
@@ -21,6 +26,7 @@ function checkSessionTimeout()
 
 function isLoggedIn()
 {
+    ensureSession();
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 }
 
@@ -42,6 +48,8 @@ function requireRole($user_role, $required_role)
 
 function login($userId, $userData = [])
 {
+    ensureSession();
+    session_regenerate_id(true);
     $_SESSION['user_id'] = $userId;
     $_SESSION['user_data'] = $userData;
     $_SESSION['last_activity'] = time();
@@ -49,6 +57,7 @@ function login($userId, $userData = [])
 
 function logout()
 {
+    ensureSession();
     session_unset();
     session_destroy();
 }

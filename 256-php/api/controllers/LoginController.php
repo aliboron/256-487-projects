@@ -29,6 +29,18 @@ class LoginController
             return;
         }
 
+        // Start session and store user data
+        ensureSession();
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_data'] = [
+            'id' => $user['id'],
+            'username' => $user['username'],
+            'email' => $user['email'] ?? '',
+            'type' => $user['type']
+        ];
+        $_SESSION['last_activity'] = time();
+
         $token = $this->createToken($user['id']);
 
         $_SESSION["role"] = $user["type"];
@@ -76,6 +88,19 @@ class LoginController
         $stmt->execute([$username, $email, $gender, $phone, $birth_date, $hashedPassword, $role]);
 
         $userId = $this->db->lastInsertId();
+
+        // Start session and store user data
+        ensureSession();
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['user_data'] = [
+            'id' => $userId,
+            'username' => $username,
+            'email' => $email,
+            'type' => $role
+        ];
+        $_SESSION['last_activity'] = time();
+
         $token = $this->createToken($userId);
 
 
@@ -96,7 +121,8 @@ class LoginController
     /* ================= GUEST ================= */
     public function guest()
     {
-        // Guest kullanıcı DB’ye yazılmak zorunda değil
+        // Guest kullanıcı DB’ye yazılmak zorunda değil        ensureSession();
+        session_regenerate_id(true);
         $token = bin2hex(random_bytes(32));
 
         $_SESSION["role"] = "guest";
