@@ -22,7 +22,7 @@
 
 .search-input:focus {
     background-color: #2a2a2a;
-    border-color: #4CAF50;
+    border-color: #4caf50;
     color: #ffffff;
     box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
     outline: none;
