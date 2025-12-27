@@ -59,6 +59,7 @@ $activePage = 'checkout';
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -69,6 +70,7 @@ $activePage = 'checkout';
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/checkout.css">
 </head>
+
 <body>
     <?php include 'components/navbar.php'; ?>
 
@@ -93,9 +95,9 @@ $activePage = 'checkout';
                 <div class="checkout-section">
                     <h3 class="section-title"><i class="fa-solid fa-gamepad"></i> Game Details</h3>
                     <div class="game-checkout-card">
-                        <img src="<?php echo htmlspecialchars($game['logo_path']); ?>" 
-                             alt="<?php echo htmlspecialchars($game['name']); ?>"
-                             onerror="this.src='https://via.placeholder.com/150x200/2a2a2a/ffffff?text=No+Image'">
+                        <img src="<?php echo htmlspecialchars($game['logo_path']); ?>"
+                            alt="<?php echo htmlspecialchars($game['name']); ?>"
+                            onerror="this.src='https://via.placeholder.com/150x200/2a2a2a/ffffff?text=No+Image'">
                         <div class="game-checkout-info">
                             <h4><?php echo htmlspecialchars($game['name']); ?></h4>
                             <p class="game-genre"><i class="fa-solid fa-tag"></i> <?php echo htmlspecialchars($game['genre']); ?></p>
@@ -192,32 +194,32 @@ $activePage = 'checkout';
             <div class="checkout-right">
                 <div class="order-summary">
                     <h3 class="summary-title"><i class="fa-solid fa-receipt"></i> Order Summary</h3>
-                    
+
                     <div class="summary-item">
                         <span>Subtotal</span>
                         <span class="summary-price">$<?php echo number_format($subtotal, 2); ?></span>
                     </div>
-                    
+
                     <div class="summary-item">
                         <span>Tax (10%)</span>
                         <span class="summary-price">$<?php echo number_format($tax, 2); ?></span>
                     </div>
-                    
+
                     <div class="summary-divider"></div>
-                    
+
                     <div class="summary-item summary-total">
                         <span>Total</span>
                         <span class="summary-price">$<?php echo number_format($total, 2); ?></span>
                     </div>
-                    
+
                     <button class="btn btn-purchase" id="completePurchaseBtn">
                         <i class="fa-solid fa-lock"></i> Complete Purchase
                     </button>
-                    
+
                     <a href="index.php" class="btn btn-cancel">
                         <i class="fa-solid fa-arrow-left"></i> Back to Store
                     </a>
-                    
+
                     <div class="secure-checkout">
                         <i class="fa-solid fa-shield-halved"></i>
                         <span>Secure Checkout</span>
@@ -243,7 +245,7 @@ $activePage = 'checkout';
                 }
 
                 const data = await response.json();
-                
+
                 // Check if user is authenticated from backend
                 // You may need to adjust this based on your actual API response
                 if (!data.authenticated && !data.user) {
@@ -303,24 +305,24 @@ $activePage = 'checkout';
             const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
             const email = document.getElementById('email').value;
             const country = document.getElementById('country').value;
-            
+
             if (!email || !country) {
                 alert('Please fill in all required fields');
                 return;
             }
-            
+
             if (paymentMethod === 'credit_card') {
                 const cardNumber = document.getElementById('cardNumber').value;
                 const expiryDate = document.getElementById('expiryDate').value;
                 const cvv = document.getElementById('cvv').value;
                 const cardName = document.getElementById('cardName').value;
-                
+
                 if (!cardNumber || !expiryDate || !cvv || !cardName) {
                     alert('Please fill in all card details');
                     return;
                 }
             }
-            
+
             // In production, this would make an API call to process the payment
             if (confirm('Complete your purchase for $<?php echo number_format($total, 2); ?>?')) {
                 // Simulate successful purchase
@@ -330,4 +332,5 @@ $activePage = 'checkout';
         });
     </script>
 </body>
+
 </html>
