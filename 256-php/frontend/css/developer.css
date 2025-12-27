@@ -72,8 +72,8 @@
     display: block;
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
+.form-group input[type='text'],
+.form-group input[type='number'],
 .form-group textarea,
 .form-group select {
     width: 100%;
@@ -88,7 +88,7 @@
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-    border-color: #4CAF50;
+    border-color: #4caf50;
     outline: none;
     box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
 }
@@ -109,13 +109,13 @@
 }
 
 .file-upload-area:hover {
-    border-color: #4CAF50;
+    border-color: #4caf50;
     background-color: #2f2f2f;
 }
 
 .file-upload-area i {
     font-size: 3rem;
-    color: #4CAF50;
+    color: #4caf50;
     margin-bottom: 1rem;
 }
 
@@ -124,7 +124,7 @@
     margin: 0;
 }
 
-.file-upload-area input[type="file"] {
+.file-upload-area input[type='file'] {
     display: none;
 }
 
@@ -171,9 +171,9 @@
 }
 
 .btn-primary {
-    background-color: #4CAF50;
+    background-color: #4caf50;
     color: #ffffff;
-    border: 1px solid #4CAF50;
+    border: 1px solid #4caf50;
     padding: 0.75rem 2rem;
     border-radius: 4px;
     font-size: 1rem;
@@ -227,7 +227,7 @@
 }
 
 .filter-bar select:focus {
-    border-color: #4CAF50;
+    border-color: #4caf50;
     outline: none;
 }
 

@@ -18,7 +18,7 @@
 }
 
 .checkout-header h1 i {
-    color: #4CAF50;
+    color: #4caf50;
     margin-right: 0.5rem;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .section-title i {
-    color: #4CAF50;
+    color: #4caf50;
 }
 
 /* Game Checkout Card */
@@ -99,7 +99,7 @@
 
 .game-checkout-info .game-genre i,
 .game-checkout-info .game-developer i {
-    color: #4CAF50;
+    color: #4caf50;
 }
 
 .game-checkout-info .game-description {
@@ -122,7 +122,7 @@
     margin: 0;
 }
 
-.payment-option input[type="radio"] {
+.payment-option input[type='radio'] {
     display: none;
 }
 
@@ -152,21 +152,21 @@
 }
 
 .payment-option:hover .payment-option-content {
-    border-color: #4CAF50;
+    border-color: #4caf50;
     background: #1a1a1a;
 }
 
-.payment-option input[type="radio"]:checked + .payment-option-content {
-    border-color: #4CAF50;
+.payment-option input[type='radio']:checked + .payment-option-content {
+    border-color: #4caf50;
     background: rgba(76, 175, 80, 0.1);
 }
 
-.payment-option input[type="radio"]:checked + .payment-option-content i {
-    color: #4CAF50;
+.payment-option input[type='radio']:checked + .payment-option-content i {
+    color: #4caf50;
 }
 
-.payment-option input[type="radio"]:checked + .payment-option-content span {
-    color: #4CAF50;
+.payment-option input[type='radio']:checked + .payment-option-content span {
+    color: #4caf50;
 }
 
 /* Payment Form */
@@ -188,7 +188,7 @@
 }
 
 .form-group label i {
-    color: #4CAF50;
+    color: #4caf50;
 }
 
 .form-control {
@@ -204,7 +204,7 @@
 
 .form-control:focus {
     outline: none;
-    border-color: #4CAF50;
+    border-color: #4caf50;
     background: #1a1a1a;
 }
 
@@ -241,7 +241,7 @@
 }
 
 .summary-title i {
-    color: #4CAF50;
+    color: #4caf50;
 }
 
 .summary-item {
@@ -272,14 +272,14 @@
 }
 
 .summary-total .summary-price {
-    color: #4CAF50;
+    color: #4caf50;
     font-size: 1.5rem;
 }
 
 .btn-purchase {
     width: 100%;
     padding: 1rem;
-    background: #4CAF50;
+    background: #4caf50;
     color: white;
     border: none;
     border-radius: 4px;
@@ -320,8 +320,8 @@
 
 .btn-cancel:hover {
     background: #1a1a1a;
-    border-color: #4CAF50;
-    color: #4CAF50;
+    border-color: #4caf50;
+    color: #4caf50;
 }
 
 .secure-checkout {
@@ -337,7 +337,7 @@
 }
 
 .secure-checkout i {
-    color: #4CAF50;
+    color: #4caf50;
 }
 
 /* Responsive Design */
@@ -345,11 +345,11 @@
     .checkout-content {
         grid-template-columns: 1fr;
     }
-    
+
     .checkout-right {
         position: static;
     }
-    
+
     .payment-methods {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -359,30 +359,30 @@
     .checkout-container {
         padding: 1rem;
     }
-    
+
     .checkout-header h1 {
         font-size: 2rem;
     }
-    
+
     .checkout-section {
         padding: 1.5rem;
     }
-    
+
     .game-checkout-card {
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
-    
+
     .game-checkout-card img {
         width: 200px;
         height: 267px;
     }
-    
+
     .payment-methods {
         grid-template-columns: 1fr;
     }
-    
+
     .order-summary {
         padding: 1.5rem;
     }

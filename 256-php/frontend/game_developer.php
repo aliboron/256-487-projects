@@ -61,7 +61,7 @@ $statusFilter = $_GET['status'] ?? 'all';
 // Filter games by status
 $filteredGames = $myGames;
 if ($statusFilter !== 'all') {
-    $filteredGames = array_filter($myGames, function($game) use ($statusFilter) {
+    $filteredGames = array_filter($myGames, function ($game) use ($statusFilter) {
         return $game['status'] === $statusFilter;
     });
 }
@@ -72,8 +72,12 @@ $totalRevenue = 0;
 foreach ($myGames as $game) {
     $totalRevenue += $game['sales'] * $game['price'];
 }
-$approvedGamesCount = count(array_filter($myGames, function($game) { return $game['status'] === 'approved'; }));
-$pendingGamesCount = count(array_filter($myGames, function($game) { return $game['status'] === 'pending'; }));
+$approvedGamesCount = count(array_filter($myGames, function ($game) {
+    return $game['status'] === 'approved';
+}));
+$pendingGamesCount = count(array_filter($myGames, function ($game) {
+    return $game['status'] === 'pending';
+}));
 ?>
 <!DOCTYPE html>
 <html lang="en">
