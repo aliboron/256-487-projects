@@ -155,6 +155,35 @@ class UserRepository
         $stmt->execute(['id' => $id]);
         return $stmt->rowCount() > 0;
     }
+
+    /**
+     * Delete a user (alias for delete method)
+     */
+    public function deleteUser(int $id): bool
+    {
+        return $this->delete($id);
+    }
+
+    /**
+     * Deactivate a user by setting is_verified to 0
+     */
+    public function deactivateUser(int $id): bool
+    {
+        $stmt = $this->db->prepare("UPDATE users SET is_verified = 0 WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Check if a user is verified
+     */
+    public function isUserVerified(int $id): bool
+    {
+        $stmt = $this->db->prepare("SELECT is_verified FROM users WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result && (int)$result['is_verified'] === 1;
+    }
 }
 
 

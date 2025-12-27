@@ -64,7 +64,8 @@ class Endpoint
         public string $method,
         private mixed $handler,
         public array $variables = [],
-        public ?string $responseType = null
+        public ?string $responseType = null,
+        public ?string $requiredRole = null
     ) {}
 
     public function getHandler(): callable
@@ -100,6 +101,11 @@ class Endpoint
      */
     public function invoke(string $requestPath): mixed
     {
+        // Check authorization if required
+        if ($this->requiredRole !== null) {
+            requireRole($_SESSION['role'] ?? null, $this->requiredRole);
+        }
+
         // Get path variables
         $pathVars = $this->extractVariables($requestPath);
 
@@ -211,6 +217,15 @@ class EndpointManager
 function registerRoutesFromController(EndpointManager $manager, object $controller): void
 {
     $ref = new ReflectionClass($controller);
+
+    // Check if controller has Authorize attribute
+    $authorizeAttrs = $ref->getAttributes(Authorize::class);
+    $requiredRole = null;
+    if (!empty($authorizeAttrs)) {
+        $authorize = $authorizeAttrs[0]->newInstance();
+        $requiredRole = $authorize->role;
+    }
+
     foreach ($ref->getMethods() as $method) {
         $attrs = $method->getAttributes(Route::class);
         if (!$attrs) continue;
@@ -222,7 +237,8 @@ function registerRoutesFromController(EndpointManager $manager, object $controll
             path: $route->path,
             method: $route->method,
             handler: $handler,
-            responseType: $route->responseType
+            responseType: $route->responseType,
+            requiredRole: $requiredRole
         );
 
         $manager->register($endpoint);
