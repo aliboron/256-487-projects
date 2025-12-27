@@ -6,20 +6,21 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 @Entity(
     tableName = "games",
-    foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["id"],
-            childColumns = ["developer_id"],
-            onDelete = ForeignKey.CASCADE,
-            onUpdate = ForeignKey.CASCADE
-        )
-    ],
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = User::class,
+//            parentColumns = ["id"],
+//            childColumns = ["developer_id"],
+//            onDelete = ForeignKey.CASCADE,
+//            onUpdate = ForeignKey.CASCADE
+//        )
+//    ],
     indices = [
         Index(value = ["developer_id"]),
         Index(value = ["genre"]),
@@ -40,12 +41,15 @@ data class Game(
     @ColumnInfo(name = "price")
     val price: Double,
 
+    @SerializedName("is_approved")
     @ColumnInfo(name = "is_approved")
     val isApproved: Boolean = false,
 
+    @SerializedName("logo_path")
     @ColumnInfo(name = "logo_path")
     val logoPath: String?,
 
+    @SerializedName("developer_id")
     @ColumnInfo(name = "developer_id")
     val developerId: Int,
 

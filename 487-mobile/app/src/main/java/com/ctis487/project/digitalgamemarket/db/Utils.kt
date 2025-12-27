@@ -1,7 +1,9 @@
 package com.ctis487.project.digitalgamemarket.db
 
-object Utils {
+import com.ctis487.project.digitalgamemarket.model.User
 
-    var baseUrl: String = "https://ctis256.aliboron.tr"
+object Utils {
+    var baseUrl: String = "https://ctis256.sezertetik.dev"
     const val DATABASENAME = "digital_game_market_db"
+    val SESSION: User? = null
 }

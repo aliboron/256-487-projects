@@ -14,7 +14,7 @@ data class ApiResponse<T>(
     val data: T?,
 
     @SerializedName("message")
-    val message: String
+    val message: String? = null
 )
 
 /**
