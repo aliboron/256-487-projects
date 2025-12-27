@@ -1,9 +1,30 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.DigitalGameMarket" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Theme.DigitalGameMarket" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/brand_indigo</item>     <item name="colorPrimaryVariant">@color/brand_indigo_dark</item>
+        <item name="colorOnPrimary">@color/steam_accent_blue</item> <item name="colorSecondary">@color/steam_accent_blue</item>
+        <item name="colorSecondaryVariant">@color/brand_green</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <item name="android:windowBackground">@color/steam_bg_main</item>
+        <item name="android:colorBackground">@color/steam_bg_main</item>
+
+        <item name="colorSurface">@color/steam_card_surface</item>
+        <item name="colorOnSurface">@color/black</item>
+
+        <item name="android:statusBarColor">@color/brand_indigo</item>
+        <item name="android:windowLightStatusBar">false</item> <item name="buttonStyle">@style/SteamButton</item>
+        <item name="bottomNavigationStyle">@style/SteamBottomNav</item>
     </style>
 
-    <style name="Theme.DigitalGameMarket" parent="Base.Theme.DigitalGameMarket" />
+    <style name="SteamButton" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">2dp</item> <item name="android:paddingVertical">12dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="SteamBottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="backgroundColor">@color/brand_indigo</item> <item name="itemIconTint">@color/bottom_nav_colors</item>
+        <item name="itemTextColor">@color/bottom_nav_colors</item>
+        <item name="elevation">8dp</item>
+    </style>
 </resources>

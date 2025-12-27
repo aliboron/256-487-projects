@@ -2,6 +2,7 @@ package com.ctis487.project.digitalgamemarket
 
 import android.content.Context
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -9,6 +10,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.ctis487.project.digitalgamemarket.adapter.FeaturedGamesAdapter
 import com.ctis487.project.digitalgamemarket.adapter.StoreGamesAdapter
 import com.ctis487.project.digitalgamemarket.client.ApiClient
@@ -20,21 +23,15 @@ import com.ctis487.project.digitalgamemarket.db.GameRepository
 import com.ctis487.project.digitalgamemarket.db.UserRepository
 import com.ctis487.project.digitalgamemarket.db.Utils
 import com.ctis487.project.digitalgamemarket.model.Game
+import com.ctis487.project.digitalgamemarket.worker.BuyGameWorker
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     lateinit var db : DigitalGameAssetRoomDatabase
 
-    lateinit var gameList: MutableList<Game>
-
-
-    lateinit var userList: MutableList<Game>
 
     lateinit var userRepo : UserRepository
     lateinit var gameRepo : GameRepository
-    lateinit var mediaRepo : GameMediaRepository
-
-    private val apiService by lazy { ApiClient.getClient().create(GameMarketApiService::class.java) }
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.setLocale(newBase, LocaleHelper.getLanguage(newBase)))
@@ -44,27 +41,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        WorkManager.getInstance(this).cancelAllWorkByTag("marketing_worker")
+
+        val marketingWork = OneTimeWorkRequestBuilder<BuyGameWorker>()
+            .addTag("marketing_worker")
+            .build()
+
+        WorkManager.getInstance(this).enqueue(marketingWork)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        /*
-        binding.btnSettings.setOnClickListener {
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnCheckout.setOnClickListener {
-            val intent = Intent(this, CheckoutActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnLibrary.setOnClickListener {
-            val intent = Intent(this, LibraryActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnLanguage.setOnClickListener {
-            changeLanguage()
-        }*/
 
         db = DigitalGameAssetRoomDatabase.getDatabase(application)
         userRepo = UserRepository(db.userDAO(), ApiClient.getClient().create(GameMarketApiService::class.java))
@@ -86,6 +72,7 @@ class MainActivity : AppCompatActivity() {
 
         val featuredGamesAdapter = FeaturedGamesAdapter(mutableMapOf()) { game ->
             Toast.makeText(this, "${game.name} tıklandı", Toast.LENGTH_SHORT).show()
+
         }
 
         binding.featuredRecycler.adapter = featuredGamesAdapter
@@ -124,38 +111,40 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.menuItemStore -> {
                         Log.wtf("WTF", "WTF")
+                        playClickSound()
                 }
                 R.id.menuItemSettings -> {
                     val intent = Intent(this,SettingsActivity::class.java)
                     startActivity(intent)
+                    playClickSound()
+                }
+                R.id.menuItemLibrary -> {
+                    val intent = Intent(this, LibraryActivity::class.java)
+                    startActivity(intent)
+                    playClickSound()
                 }
             }
 
             true
         }
-        /*
-        val storeAdapter = StoreGamesAdapter(
-            gameList = myGameList,
-            onGameClick = { game ->
-                // Navigate to Game Details Activity
-            },
-            onBuyClick = { game ->
-                // Add to cart or start checkout process
-                Toast.makeText(this, "Added ${game.name} to cart!", Toast.LENGTH_SHORT).show()
-            }
-        )
-        recyclerView.adapter = storeAdapter*/
+
     }
 
-    private fun changeLanguage() {
-        val currentLang = LocaleHelper.getLanguage(this)
-        val newLang = if (currentLang == "tr") "en" else "tr"
-        LocaleHelper.setLocale(this, newLang)
-        displayToast(resources.getString(R.string.toast_language_changed))
-        recreate()
+    override fun onResume() {
+        super.onResume()
     }
 
     private fun displayToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun playClickSound() {
+        try {
+            val mediaPlayer = MediaPlayer.create(this, R.raw.click_sound)
+            mediaPlayer.setOnCompletionListener { mp -> mp.release() }
+            mediaPlayer.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
