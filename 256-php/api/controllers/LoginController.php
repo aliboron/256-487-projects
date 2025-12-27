@@ -33,7 +33,14 @@ class LoginController
 
         $_SESSION["role"] = $user["type"];
 
-        return new ApiResponse(true, ["token" => $token], "Login successfull");
+        return new ApiResponse(true, [
+            "token" => $token,
+            "user" => [
+                "id" => $user["id"],
+                "username" => $user["username"],
+                "type" => $user["type"]
+            ],
+        ], "Login successfull");
     }
 
     #[Route("/register", "POST")]
@@ -50,8 +57,7 @@ class LoginController
         $role = $data['type'] ?? '';
         $birth_date = $data["birth_date"] ?? '';
 
-        if ($role !== 'game_developer' && $role !== 'user')
-        {
+        if ($role !== 'game_developer' && $role !== 'user') {
             return new ApiResponse(false, null, "Invalid login options.");
         }
 
@@ -71,13 +77,18 @@ class LoginController
 
         $userId = $this->db->lastInsertId();
         $token = $this->createToken($userId);
-        
+
 
         $_SESSION["role"] = $role;
 
         return new ApiResponse(true, [
             "redirect" => "/",
-            "token" => $token
+            "token" => $token,
+            "user" => [
+                "id" => $userId,
+                "username" => $username,
+                "type" => $role
+            ],
         ], "Register successfull");
     }
 
@@ -102,7 +113,7 @@ class LoginController
         return new ApiResponse(true, null, "Logout successfull");
     }
 
-   
+
 
     /* ================= TOKEN ================= */
     private function createToken(int $userId): string
