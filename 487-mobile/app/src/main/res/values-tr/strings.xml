@@ -11,6 +11,7 @@
     <string name="txtLibraryDetails">Tüm oyunlarınız:</string>
     <string name="btnReturn">Geri Dön</string>
     <string name="btnLibrary">Kütüphanene Git</string>
+    <string name="boughtDateStart">Alış tarihi: </string>
 
     <!-- Checkout Activity -->
     <string name="hint_card_name">Kart üzerindeki isim</string>
