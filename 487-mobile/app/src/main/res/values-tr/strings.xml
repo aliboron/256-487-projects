@@ -65,6 +65,10 @@
     <string name="btn_back">Geri</string>
     <string name="btn_settings">Ayarlar</string>
     <string name="btn_go_to_checkout">Ödeme Sayfasına Git</string>
+    <string name="menu_title_store">Mağaza</string>
+    <string name="menu_title_library">Kütüphane</string>
+    <string name="menu_title_settings">Ayarlar</string>
+    <string name="button_buy">Al</string>
 </resources>
 
 

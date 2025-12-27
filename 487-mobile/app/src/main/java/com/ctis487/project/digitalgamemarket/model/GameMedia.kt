@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -32,26 +33,34 @@ data class GameMedia(
     val id: Int = 0,
 
     @ColumnInfo(name = "game_id")
+    @SerializedName("game_id")
     val gameId: Int,
 
     @ColumnInfo(name = "media_type")
+    @SerializedName("media_type")
     val mediaType: MediaType,
 
     @ColumnInfo(name = "file_path")
+    @SerializedName("file_path")
     val filePath: String = ".",
 
     @ColumnInfo(name = "file_name")
+    @SerializedName("file_name")
     val fileName: String,
 
     @ColumnInfo(name = "display_order")
+    @SerializedName("display_order")
     val displayOrder: Int = 0,
 
     @ColumnInfo(name = "uploaded_at")
-    val uploadedAt: Long = System.currentTimeMillis()
+    @SerializedName("uploaded_at")
+    val uploadedAt: String = ""
 ) : Parcelable
 
-enum class MediaType {
+enum class MediaType{
+    @SerializedName("image")
     IMAGE,
+    @SerializedName("video")
     VIDEO
 }
 

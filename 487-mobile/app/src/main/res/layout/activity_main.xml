@@ -7,47 +7,39 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/btnSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="15dp"
-        android:backgroundTint="#3F51B5"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:text="@string/btn_settings"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@+id/btnCheckout"
-        app:layout_constraintEnd_toEndOf="@+id/btnCheckout" />
-
-    <Button
-        android:id="@+id/btnCheckout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#3F51B5"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:text="@string/btn_go_to_checkout"
-        android:textSize="16sp"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavBar"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/featuredRecycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintDimensionRatio="92:43"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btnLibrary"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="17dp"
-        android:backgroundTint="#3F51B5"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:text="@string/btnLibrary"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="@+id/btnCheckout"
-        app:layout_constraintTop_toBottomOf="@+id/btnCheckout" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/storeItemsRecycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/featuredRecycler" />
 
     <Button
         android:id="@+id/btnLanguage"

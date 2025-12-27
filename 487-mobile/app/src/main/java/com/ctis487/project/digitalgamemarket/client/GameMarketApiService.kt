@@ -144,6 +144,9 @@ interface GameMarketApiService {
         @Body request: LoginApiRequest
     ): Response<ApiResponse<LoginResponseDto>>
 
+    @GET("/api/media/all")
+    suspend fun getMedia() : Response<ApiResponse<List<GameMedia>>>
+
 
 
     @POST("/api/login/guest")
