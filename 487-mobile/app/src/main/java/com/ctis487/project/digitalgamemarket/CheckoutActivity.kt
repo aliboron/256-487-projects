@@ -219,7 +219,7 @@ class CheckoutActivity : AppCompatActivity() {
                         MotionToast.setSuccessBackgroundColor(com.google.android.material.R.color.design_default_color_primary)
                         MotionToast.createToast(this@CheckoutActivity,
                             "Hurray success 😍",
-                            "Upload Completed successfully!",
+                            "You bought a game!",
                             MotionToastStyle.SUCCESS,
                             MotionToast.GRAVITY_BOTTOM,
                             MotionToast.LONG_DURATION,

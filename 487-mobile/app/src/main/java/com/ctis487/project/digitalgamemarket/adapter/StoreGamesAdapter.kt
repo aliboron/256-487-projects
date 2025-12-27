@@ -18,7 +18,6 @@ class StoreGamesAdapter(
     inner class StoreGameViewHolder(val binding: StoreGameItemBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StoreGameViewHolder {
-        // Make sure the name here matches the XML file name (store_game_item.xml -> StoreGameItemBinding)
         val binding = StoreGameItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return StoreGameViewHolder(binding)
     }
@@ -26,16 +25,13 @@ class StoreGamesAdapter(
     override fun onBindViewHolder(holder: StoreGameViewHolder, position: Int) {
         val game = gameList[position]
 
-        // Bind Text Data
         holder.binding.tvGameName.text = game.name
         holder.binding.tvGameGenre.text = game.genre
 
         val bannerURL = Utils.bannerImages.filter { it -> it.gameId == game.id && it.fileName.contains("banner", ignoreCase = false)}
 
-        // Format Price (Assuming price is Double)
         holder.binding.tvGamePrice.text = String.format(Locale.US, "$%.2f", game.price)
 
-        // Load Image using Glide
         Glide.with(holder.itemView.context)
             .load(bannerURL[0].filePath)
             .centerCrop()
@@ -43,7 +39,6 @@ class StoreGamesAdapter(
             .into(holder.binding.imgGameCover)
 
 
-        // Click Listener for the Buy Button only
         holder.binding.btnBuy.setOnClickListener {
             onBuyClick(game)
         }

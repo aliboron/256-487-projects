@@ -51,7 +51,8 @@ class LibraryActivity : AppCompatActivity() {
         var userId = Utils.user!!.user.id//userId'yi al
 
         binding.libraryRecyclerView.setLayoutManager(LinearLayoutManager(this))
-
+        adapter = LibraryRecyclerViewAdapter(this@LibraryActivity,recItems)
+        binding.libraryRecyclerView.adapter = adapter
 
         db.checkoutDAO().getCheckoutsByUser(userId).observe(this) { checkOutsOrEmpty ->
             //Log.d("LibraryActivity", checkOutsOrEmpty.toString()+ "if'den önce")
@@ -69,12 +70,10 @@ class LibraryActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    adapter = LibraryRecyclerViewAdapter(this@LibraryActivity,recItems)
-                    binding.libraryRecyclerView.adapter = adapter
-                }
 
-            adapter = LibraryRecyclerViewAdapter(this, recItems)
-            binding.libraryRecyclerView.adapter = adapter
+                    adapter.setData(recItems)
+                }
+                adapter.setData(recItems)
             } else {//Yoksa Apiden çek
                 Log.d("LibraryActivity", "There are no checkout on DB. Fetching from API.")
                 lifecycleScope.launch(Dispatchers.IO) {
@@ -83,28 +82,25 @@ class LibraryActivity : AppCompatActivity() {
 
                     checkouts = apiCheckouts
 
-                    db.gameDAO().getAllGames().observe(this@LibraryActivity) { gamesFromDb ->
-                        games = gamesFromDb
-                        checkouts.forEach {
-                            var checkout = it
-                            games.forEach {
-                                if (it.id == checkout.gameId) {
-                                    userGames.add(it)
-                                    recItems.add(LibItem(checkout, it))
-                                }
+                    games = db.gameDAO().getAllGamesDirect()
+                    checkouts.forEach {
+                        var checkout = it
+                        games.forEach {
+                            if (it.id == checkout.gameId) {
+                                userGames.add(it)
+                                recItems.add(LibItem(checkout, it))
                             }
                         }
-                        adapter = LibraryRecyclerViewAdapter(this@LibraryActivity,recItems)
-                        binding.libraryRecyclerView.adapter = adapter
                     }
+                    adapter.setData(recItems)
 
                     if (apiCheckouts != null) {//Apiden çekti
                         Log.d("LibraryActivity", checkouts.toString(), result.exceptionOrNull())
                         Log.d("Games", games.joinToString(" "))
                     } else//Apiden çekemedi
                         Log.e("LibraryActivity", "API fetch failed", result.exceptionOrNull())
-                        Log.d("Games", games.joinToString(" "))
-                    }
+                    Log.d("Games", games.joinToString(" "))
+                }
             }
         }
 

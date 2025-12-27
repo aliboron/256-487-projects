@@ -49,6 +49,15 @@ class MainActivity : AppCompatActivity() {
 
         WorkManager.getInstance(this).enqueue(marketingWork)
 
+        val displayMetrics = resources.displayMetrics
+        val config = resources.configuration
+
+        val widthPx = displayMetrics.widthPixels
+        val heightPx = displayMetrics.heightPixels
+        val widthDp = config.screenWidthDp
+        val heightDp = config.screenHeightDp
+
+        val gridColumns =  if (widthDp < 500)  1 else 2
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -68,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.storeItemsRecycler.adapter = storeAdapter
-        binding.storeItemsRecycler.layoutManager = GridLayoutManager(this, 2)
+        binding.storeItemsRecycler.layoutManager = GridLayoutManager(this, gridColumns)
 
         val featuredGamesAdapter = FeaturedGamesAdapter(mutableMapOf()) { game ->
             Toast.makeText(this, "${game.name} tıklandı", Toast.LENGTH_SHORT).show()
