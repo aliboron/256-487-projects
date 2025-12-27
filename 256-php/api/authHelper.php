@@ -2,6 +2,7 @@
 require_once __DIR__ . '/env.php';
 
 session_start();
+session_regenerate_id(true);
 
 function checkSessionTimeout()
 {
@@ -27,6 +28,13 @@ function requireAuth()
 {
     if (!isLoggedIn()) {
         header('Location: ' . $_ENV['CLIENT_URL'] . '/login.php');
+        exit();
+    }
+}
+
+function requireRole($user_role, $required_role) {
+    if ($user_role !== $required_role) {
+        header('Location: ' . $_ENV['CLIENT_URL'] . '/not-found.php');
         exit();
     }
 }
