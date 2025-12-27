@@ -139,5 +139,17 @@ interface GameMarketApiService {
     // Note: Media upload requires multipart/form-data, handled separately
     // @POST("/api/developers/{developerId}/games/{gameId}/assets")
     // suspend fun uploadGameAsset(...)
+    @POST("/api/login")
+    suspend fun login(
+        @Body request: LoginApiRequest
+    ): Response<ApiResponse<LoginApiRequest>>
+
+
+
+    @POST("/api/login/guest")
+    suspend fun guestLogin(): Response<ApiResponse<Any>>
+
+    @POST("/api/logout")
+    suspend fun logout(): Response<ApiResponse<Any>>
 }
 
