@@ -137,7 +137,147 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="./vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect');
+            const gameId = urlParams.get('game_id');
+
+            // Handle login form submission
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const username = $('#login-username').val();
+                const password = $('#login-password').val();
+                const submitBtn = $(this).find('button[type="submit"]');
+
+                // Disable button and show loading state
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Logging in...');
+
+                $.ajax({
+                    url: '../api/login',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        username: username,
+                        password: password
+                    }),
+                    xhrFields: {
+                        withCredentials: true // Include cookies
+                    },
+                    success: function(response) {
+                        console.log('Login successful:', response);
+
+                        // Handle redirect
+                        if (redirect === 'checkout' && gameId) {
+                            window.location.href = 'checkout.php?game_id=' + gameId;
+                        } else if (redirect) {
+                            window.location.href = redirect + '.php';
+                        } else {
+                            // Redirect based on user type
+                            if (response.data && response.data.user) {
+                                if (response.data.user.type === 'game_developer') {
+                                    window.location.href = 'game_developer.php';
+                                } else if (response.data.user.type === 'admin') {
+                                    window.location.href = 'admin.php';
+                                } else {
+                                    window.location.href = 'index.php';
+                                }
+                            } else {
+                                window.location.href = 'index.php';
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Login error:', error);
+                        let errorMsg = 'Login failed. Please try again.';
+
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.status === 401) {
+                            errorMsg = 'Invalid username or password.';
+                        }
+
+                        alert(errorMsg);
+
+                        // Re-enable button
+                        submitBtn.prop('disabled', false);
+                        submitBtn.html('<i class="fa-solid fa-right-to-bracket"></i> Login');
+                    }
+                });
+            });
+
+            // Handle register form submission
+            $('#registerForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const formData = {
+                    username: $('#register-username').val(),
+                    email: $('#register-email').val(),
+                    phone: $('#register-phone').val(),
+                    gender: $('input[name="gender"]:checked').val(),
+                    birth_date: $('#register-birth-date').val(),
+                    password: $('#register-password').val(),
+                    type: $('input[name="type"]:checked').val()
+                };
+
+                const submitBtn = $(this).find('button[type="submit"]');
+
+                // Disable button and show loading state
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Registering...');
+
+                $.ajax({
+                    url: '../api/register',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    xhrFields: {
+                        withCredentials: true // Include cookies
+                    },
+                    success: function(response) {
+                        console.log('Registration successful:', response);
+                        alert('Registration successful! You can now login.');
+
+                        // Switch to login tab
+                        $('#login-tab').tab('show');
+
+                        // Clear form
+                        $('#registerForm')[0].reset();
+
+                        // Re-enable button
+                        submitBtn.prop('disabled', false);
+                        submitBtn.html('<i class="fa-solid fa-user-plus"></i> Register');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Registration error:', error);
+                        let errorMsg = 'Registration failed. Please try again.';
+
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.status === 409) {
+                            errorMsg = 'Username already exists. Please choose another.';
+                        }
+
+                        alert(errorMsg);
+
+                        // Re-enable button
+                        submitBtn.prop('disabled', false);
+                        submitBtn.html('<i class="fa-solid fa-user-plus"></i> Register');
+                    }
+                });
+            });
+
+            // Handle guest button
+            $('#guestBtn').on('click', function() {
+                window.location.href = 'index.php';
+            });
+        });
+    </script>
 </body>
 
 </html>

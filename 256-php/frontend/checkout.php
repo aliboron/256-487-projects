@@ -233,7 +233,7 @@ $activePage = 'checkout';
         // Check authentication on page load
         async function checkAuthentication() {
             try {
-                const response = await fetch('../api/index.php/health', {
+                const response = await fetch('/api/health', {
                     method: 'GET',
                     credentials: 'include' // Include cookies in the request
                 });
@@ -245,10 +245,10 @@ $activePage = 'checkout';
                 }
 
                 const data = await response.json();
+                console.log('Checkout auth response:', data);
 
                 // Check if user is authenticated from backend
-                // You may need to adjust this based on your actual API response
-                if (!data.authenticated && !data.user) {
+                if (!data.success || !data.data || !data.data.user) {
                     window.location.href = 'login.php?redirect=checkout&game_id=<?php echo $gameId; ?>';
                     return;
                 }
@@ -258,8 +258,8 @@ $activePage = 'checkout';
                 document.getElementById('checkoutContent').style.display = 'block';
 
                 // Populate email if available from user data
-                if (data.user && data.user.email) {
-                    document.getElementById('email').value = data.user.email;
+                if (data.data.user && data.data.user.email) {
+                    document.getElementById('email').value = data.data.user.email;
                 }
             } catch (error) {
                 console.error('Authentication check failed:', error);
