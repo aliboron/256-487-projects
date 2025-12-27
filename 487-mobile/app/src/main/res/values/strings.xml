@@ -10,6 +10,7 @@
     <string name="txtLibraryTitle">Users Library</string>
     <string name="txtLibraryDetails">Your all games:</string>
     <string name="btnReturn">Return</string>
+    <string name="boughtDateStart">Bought at </string>
 
     <!-- Checkout Activity -->
     <string name="hint_card_name">Name on the card</string>

@@ -16,6 +16,7 @@ import com.ctis487.project.digitalgamemarket.db.DigitalGameAssetRoomDatabase
 import com.ctis487.project.digitalgamemarket.db.Utils
 import com.ctis487.project.digitalgamemarket.model.Checkout
 import com.ctis487.project.digitalgamemarket.model.Game
+import com.ctis487.project.digitalgamemarket.model.LibItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,8 +32,9 @@ class LibraryActivity : AppCompatActivity() {
         ApiClient.getClient().create(GameMarketApiService::class.java)
     }
     lateinit var checkouts : List<Checkout>
-    var games = kotlin.collections.ArrayList<Game>()
-
+    lateinit var games : List<Game>
+    var userGames = ArrayList<Game>()
+    var recItems = ArrayList<LibItem>()
     private val db by lazy { DigitalGameAssetRoomDatabase.getDatabase(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,36 +43,56 @@ class LibraryActivity : AppCompatActivity() {
         binding = ActivityLibraryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val userId = Utils.user!!.user.id//userId'yi al
-
+        var userId = Utils.user!!.user.id//userId'yi al
 
         binding.libraryRecyclerView.setLayoutManager(LinearLayoutManager(this))
 
-        db.checkoutDAO().getCheckoutsByUser(userId).observe(this){checkOutsOrEmpty ->
+
+        db.checkoutDAO().getCheckoutsByUser(userId).observe(this) { checkOutsOrEmpty ->
             //Log.d("LibraryActivity", checkOutsOrEmpty.toString()+ "if'den önce")
             if (!checkOutsOrEmpty.isEmpty()) {//DB'de varsa DB'den çek
                 checkouts = checkOutsOrEmpty
-                adapter = LibraryRecyclerViewAdapter(this, checkouts)
-                binding.libraryRecyclerView.adapter = adapter
 
-                lifecycleScope.launch {
-                    takeGames()
-                    Log.d("Games", games.joinToString(" "))
+                db.gameDAO().getAllGames().observe(this) { gamesFromDb ->
+                    games = gamesFromDb
+                    checkouts.forEach {
+                        var checkout = it
+                        games.forEach {
+                            if (it.id == checkout.gameId) {
+                                userGames.add(it)
+                                recItems.add(LibItem(checkout, it))
+                            }
+                        }
+                    }
+                    adapter = LibraryRecyclerViewAdapter(this@LibraryActivity,recItems)
+                    binding.libraryRecyclerView.adapter = adapter
                 }
 
-                //Log.d("LibraryActivity", checkouts.toString() + "checkouts null değil")
+            adapter = LibraryRecyclerViewAdapter(this, recItems)
+            binding.libraryRecyclerView.adapter = adapter
             } else {//Yoksa Apiden çek
                 Log.d("LibraryActivity", "There are no checkout on DB. Fetching from API.")
                 lifecycleScope.launch(Dispatchers.IO) {
                     val result: Result<List<Checkout>> = CheckoutRepository(db.checkoutDAO(), apiService).fetchCheckoutsFromApi()
                     val apiCheckouts: List<Checkout> = result.getOrNull()!!
-                    withContext(Dispatchers.Main) {
-                        checkouts = apiCheckouts
-                        adapter = LibraryRecyclerViewAdapter(this@LibraryActivity, checkouts)
-                        binding.libraryRecyclerView.adapter = adapter
 
-                        takeGames()
+                    checkouts = apiCheckouts
+
+                    db.gameDAO().getAllGames().observe(this@LibraryActivity) { gamesFromDb ->
+                        games = gamesFromDb
+                        checkouts.forEach {
+                            var checkout = it
+                            games.forEach {
+                                if (it.id == checkout.gameId) {
+                                    userGames.add(it)
+                                    recItems.add(LibItem(checkout, it))
+                                }
+                            }
+                        }
+                        adapter = LibraryRecyclerViewAdapter(this@LibraryActivity,recItems)
+                        binding.libraryRecyclerView.adapter = adapter
                     }
+
                     if (apiCheckouts != null) {//Apiden çekti
                         Log.d("LibraryActivity", checkouts.toString(), result.exceptionOrNull())
                         Log.d("Games", games.joinToString(" "))
@@ -84,15 +106,5 @@ class LibraryActivity : AppCompatActivity() {
 
     }
 
-    suspend fun takeGames(){
-        if(!checkouts.isEmpty()){
-            checkouts.forEach {
-                db.gameDAO().getGameById(it.gameId).observe(this) { gamesOrEmpty ->
-                    games.add(gamesOrEmpty)
-                }
-            }
-            Log.d("Games", games.joinToString(" "))
-            adapter.setData(checkouts,games)
-        }
-    }
+
 }

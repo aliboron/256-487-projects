@@ -8,18 +8,16 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.ctis487.project.digitalgamemarket.R
-import com.ctis487.project.digitalgamemarket.model.Checkout
-import com.ctis487.project.digitalgamemarket.model.Game
+import com.ctis487.project.digitalgamemarket.model.*
 
 
-class LibraryRecyclerViewAdapter(private val context: Context, private var recyclerItemValues: List<Checkout>) :
+class LibraryRecyclerViewAdapter(private val context: Context, private var recyclerItemValues: List<LibItem>) :
     RecyclerView.Adapter<LibraryRecyclerViewAdapter.RecyclerViewItemHolder>() {
-    private lateinit var games: MutableList<Game>
 
-    fun setData(items : List<Checkout>, gameslist : MutableList<Game>){
+    fun setData(items : List<LibItem>){
         recyclerItemValues = items
-        games = gameslist
         notifyDataSetChanged()
     }
 
@@ -32,8 +30,15 @@ class LibraryRecyclerViewAdapter(private val context: Context, private var recyc
     override fun onBindViewHolder(myRecyclerViewItemHolder: RecyclerViewItemHolder, position: Int) {
         val item = recyclerItemValues[position]
 
-        myRecyclerViewItemHolder.tvItemBoughtDate.text=item.date
+        myRecyclerViewItemHolder.tvItemBoughtDate.text= item.libCheckOut.date
+        myRecyclerViewItemHolder.tvItemName.text = item.libGame.name
 
+        Glide.with(context)
+            .load(item.libGame.logoPath)
+            .placeholder(R.drawable.ic_launcher_foreground)
+            .error(R.drawable.ic_launcher_foreground)
+            .centerCrop()
+            .into(myRecyclerViewItemHolder.tvItemImg)
 
 
         /*
@@ -60,4 +65,6 @@ class LibraryRecyclerViewAdapter(private val context: Context, private var recyc
             tvItemBoughtDate = itemView.findViewById(R.id.BoughtDateTv)
         }
     }
+
+
 }
