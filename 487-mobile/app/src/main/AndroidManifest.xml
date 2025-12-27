@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DigitalGameMarket">
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".CheckoutActivity"
             android:exported="false" />
         <activity

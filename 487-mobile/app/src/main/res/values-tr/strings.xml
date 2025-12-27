@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dijital Oyun Marketi</string>
+    <string name="editUsername">Kullanıcı Adı:\n</string>
+    <string name="btnLogin">GİRİŞ YAP\n</string>
+    <string name="txtTitle">OYUN MARKETİ</string>
+    <string name="txtCheckout">ÖDEME</string>
+
+    <!-- Checkout Activity -->
+    <string name="hint_card_name">Kart üzerindeki isim</string>
+    <string name="hint_card_number">Kart numarası (16 hane)</string>
+    <string name="hint_expiry_date">Son Kullanma (AA/YY)</string>
+    <string name="hint_cvc">CVC (3 hane)</string>
+    <string name="txt_you_are_going_to_pay">Ödeyeceğiniz tutar</string>
+    <string name="btn_cancel">İPTAL</string>
+    <string name="btn_checkout">ÖDEME YAP</string>
+    <string name="checkout_details_sample">Toplam: 83$ (Cyberpunk 2077)</string>
+    <string name="checkout_game_title_sample">Cyberpunk 2077</string>
+    <string name="checkout_game_description_sample">Oyun açıklaması</string>
+    <string name="checkout_price_sample">87$</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_game_not_loaded">Oyun bilgileri yüklenemedi</string>
+    <string name="toast_checkout_success">Ödeme başarılı! %s artık sizin</string>
+    <string name="toast_checkout_failed">Ödeme başarısız: %s</string>
+    <string name="toast_checkout_error">Ödeme hatası: %s</string>
+
+    <!-- Validation Messages -->
+    <string name="error_card_name_required">Kart ismi gereklidir</string>
+    <string name="error_card_name_too_short">Kart ismi çok kısa</string>
+    <string name="error_card_number_required">Kart numarası gereklidir</string>
+    <string name="error_card_number_invalid_length">Geçersiz kart numarası (16 hane gerekli)</string>
+    <string name="error_card_number_invalid">Geçersiz kart numarası</string>
+    <string name="error_expiry_required">Son kullanma tarihi gereklidir</string>
+    <string name="error_expiry_invalid">Geçersiz son kullanma tarihi (AA/YY formatını kullanın)</string>
+    <string name="error_cvc_required">CVC gereklidir</string>
+    <string name="error_cvc_invalid">Geçersiz CVC (3 hane gerekli)</string>
+
+    <!-- Language Button -->
+    <string name="btn_language">🌐 EN</string>
+    <string name="toast_language_changed">Language Changed to English</string>
+
+    <!-- Format Strings -->
+    <string name="format_total">Toplam: %1$.2f $ (%2$s)</string>
+    <string name="format_price">%s $</string>
+
+    <!-- Settings Activity -->
+    <string name="txt_settings">Ayarlar</string>
+    <string name="txt_language_label">Dil</string>
+    <string name="txt_current_language">Mevcut Dil:</string>
+    <string name="txt_current_language_format">Mevcut Dil: %s</string>
+    <string name="language_english">English (İngilizce)</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="btn_apply_language">Dili Uygula</string>
+    <string name="toast_language_already_selected">Dil zaten seçili</string>
+    <string name="txt_about_label">Hakkında</string>
+    <string name="txt_about_content">Dijital Oyun Marketi v1.0\nDijital oyun satın almak için mobil uygulama.\n\n© 2025 CTIS 487 Projesi</string>
+    <string name="btn_back">Geri</string>
+    <string name="btn_settings">Ayarlar</string>
+    <string name="btn_go_to_checkout">Ödeme Sayfasına Git</string>
+</resources>
+
+
