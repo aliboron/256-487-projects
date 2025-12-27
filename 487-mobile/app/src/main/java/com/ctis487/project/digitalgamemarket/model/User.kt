@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -23,37 +24,49 @@ data class User(
     val id: Int = 0,
 
     @ColumnInfo(name = "username")
+    @SerializedName("username")
     val username: String,
 
     @ColumnInfo(name = "email")
+    @SerializedName("email")
     val email: String,
 
     @ColumnInfo(name = "phone")
+    @SerializedName("phone")
     val phone: String,
 
-    @ColumnInfo(name = "password")
-    val password: String,
-
     @ColumnInfo(name = "gender")
+    @SerializedName("gender")
     val gender: String,
 
     @ColumnInfo(name = "type")
+    @SerializedName("type")
     val type: UserType = UserType.USER,
 
     @ColumnInfo(name = "registered_at")
-    val registeredAt: Long = System.currentTimeMillis(),
+    @SerializedName("registered_at")
+    val registeredAt: String,
 
     @ColumnInfo(name = "is_verified")
-    val isVerified: Boolean = false,
+    @SerializedName("is_verified")
+    val isVerified: Int = 0,
 
     @ColumnInfo(name = "birth_date")
+    @SerializedName("birth_date")
     val birthDate: String
 ) : Parcelable
 
 enum class UserType {
+    @SerializedName("admin")
     ADMIN,
+
+    @SerializedName("game_developer")
     GAME_DEVELOPER,
+
+    @SerializedName("user")
     USER,
+
+    @SerializedName("guest")
     GUEST
 }
 

@@ -2,6 +2,7 @@ package com.ctis487.project.digitalgamemarket
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -9,18 +10,30 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.util.Util
 import com.ctis487.project.digitalgamemarket.client.ApiClient
 import com.ctis487.project.digitalgamemarket.client.GameMarketApiService
 import com.ctis487.project.digitalgamemarket.custom.CustomUserView
 import com.ctis487.project.digitalgamemarket.databinding.ActivityLoginBinding
+import com.ctis487.project.digitalgamemarket.db.DigitalGameAssetRoomDatabase
+import com.ctis487.project.digitalgamemarket.db.GameRepository
+import com.ctis487.project.digitalgamemarket.db.UserRepository
+import com.ctis487.project.digitalgamemarket.db.Utils
 import com.ctis487.project.digitalgamemarket.model.LoginApiRequest
 import com.ctis487.project.digitalgamemarket.model.LoginRequest
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
     lateinit var loginBinding: ActivityLoginBinding
+    lateinit var db : DigitalGameAssetRoomDatabase
     private val loginRequest = LoginRequest()
-    private val apiService by lazy { ApiClient.getClient().create(GameMarketApiService::class.java) }
+
+    lateinit var userRepo : UserRepository
+
+    lateinit var gameRepo : GameRepository
+    private val apiService by lazy { ApiClient.getClient().create(GameMarketApiService::class.java)
+
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -69,7 +82,20 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        db = DigitalGameAssetRoomDatabase.getDatabase(application)
+        userRepo = UserRepository(db.userDAO(), ApiClient.getClient().create(GameMarketApiService::class.java))
+        gameRepo = GameRepository(db.gameDAO(), ApiClient.getClient().create(GameMarketApiService::class.java))
 
+        lifecycleScope.launch {
+            val result = userRepo.fetchUsersFromApi()
+            Log.wtf("API USER CHECK", result.isSuccess.toString())
+            gameRepo.fetchGamesFromApi()
+            val mediaResult = apiService.getMedia()
+            if (mediaResult.isSuccessful){
+                Log.d("API MEDIA CHECK", mediaResult.body()!!.data!!.joinToString(" "))
+                Utils.bannerImages.addAll(mediaResult.body()!!.data!!)
+            }
+        }
     }
 
 

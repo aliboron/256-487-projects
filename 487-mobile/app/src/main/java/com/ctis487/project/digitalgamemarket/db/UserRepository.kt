@@ -67,25 +67,9 @@ class UserRepository(
 
     // API Operations
     suspend fun fetchUsersFromApi(): Result<List<User>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = apiService.getAllUsers()
-                if (response.isSuccessful) {
-                    val apiResponse = response.body()
-                    if (apiResponse?.success == true && apiResponse.data != null) {
-                        // Save to local database
-                        insertAll(apiResponse.data)
-                        Result.success(apiResponse.data)
-                    } else {
-                        Result.failure(Exception(apiResponse?.message ?: "Unknown error"))
-                    }
-                } else {
-                    Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
+        val result = Utils.safeApiCall { apiService.getAllUsers() }
+        result.onSuccess { insertAll(it) }
+        return result
     }
 
     suspend fun fetchUserByIdFromApi(userId: Int): Result<User> {
