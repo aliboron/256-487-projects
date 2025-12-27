@@ -1,0 +1,37 @@
+/* Search Input Component Styles */
+
+.search-input-wrapper {
+    width: 100%;
+}
+
+.search-input-wrapper label {
+    color: #a0a0a0;
+    font-size: 0.9rem;
+    display: block;
+}
+
+.search-input {
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #ffffff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    background-color: #2a2a2a;
+    border-color: #4CAF50;
+    color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #606060;
+}
+
+.search-input:hover {
+    border-color: #4a4a4a;
+}

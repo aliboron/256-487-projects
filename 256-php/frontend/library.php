@@ -73,7 +73,9 @@ foreach ($libraryGames as $game) {
     <title>CTIS256 - My Library - Game Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/search_input.css">
     <link rel="stylesheet" href="css/stat_card.css">
     <link rel="stylesheet" href="css/game_card.css">
     <link rel="stylesheet" href="css/library.css">
@@ -119,6 +121,9 @@ foreach ($libraryGames as $game) {
         <div class="filter-section">
             <div class="row align-items-center">
                 <div class="col-md-3">
+                    <?php include 'components/search_input.php'; ?>
+                </div>
+                <div class="col-md-3">
                     <label class="mb-2" for="genreFilter"><i class="fa-solid fa-filter"></i> Filter by Genre:</label>
                     <select id="genreFilter" class="form-select">
                         <option value="all">All Genres</option>
@@ -134,7 +139,7 @@ foreach ($libraryGames as $game) {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="mb-2" for="sortBy"><i class="fa-solid fa-arrow-down-wide-short"></i> Sort by:</label>
                     <select id="sortBy" class="form-select">
                         <option value="recent">Recently Added</option>
@@ -142,7 +147,7 @@ foreach ($libraryGames as $game) {
                         <option value="name">Name (A-Z)</option>
                     </select>
                 </div>
-                <div class="col-md-6 text-end">
+                <div class="col-md-4 text-end">
                     <span id="gameCount" class="game-count">
                         Showing <strong><?php echo count($libraryGames); ?></strong> games
                     </span>
@@ -172,22 +177,27 @@ foreach ($libraryGames as $game) {
 
     <script src="vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Genre filter functionality
+        // Filter, sort, and search functionality
+        const searchInput = document.getElementById('searchInput');
         const genreFilter = document.getElementById('genreFilter');
         const sortBy = document.getElementById('sortBy');
         const gameItems = document.querySelectorAll('.game-item');
         const gameCount = document.getElementById('gameCount');
 
         function filterAndSort() {
+            const searchTerm = searchInput.value.toLowerCase();
             const selectedGenre = genreFilter.value;
             const sortOrder = sortBy.value;
             let visibleGames = [];
 
             // Filter games
             gameItems.forEach(item => {
+                const gameName = item.getAttribute('data-name').toLowerCase();
                 const gameGenre = item.getAttribute('data-genre');
+                const matchesSearch = gameName.includes(searchTerm);
+                const matchesGenre = selectedGenre === 'all' || gameGenre === selectedGenre;
 
-                if (selectedGenre === 'all' || gameGenre === selectedGenre) {
+                if (matchesSearch && matchesGenre) {
                     item.classList.remove('hidden');
                     visibleGames.push(item);
                 } else {
@@ -221,6 +231,7 @@ foreach ($libraryGames as $game) {
                 `Showing <strong>${visibleGames.length}</strong> game${visibleGames.length !== 1 ? 's' : ''}`;
         }
 
+        searchInput.addEventListener('input', filterAndSort);
         genreFilter.addEventListener('change', filterAndSort);
         sortBy.addEventListener('change', filterAndSort);
     </script>

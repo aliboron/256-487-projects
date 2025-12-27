@@ -157,7 +157,9 @@ $sampleGames = [
     <title>CTIS256 - Game Store - Browse Games</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="vendor/twbs/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/search_input.css">
     <link rel="stylesheet" href="css/game_card.css">
     <link rel="stylesheet" href="css/index.css">
 </head>
@@ -179,6 +181,9 @@ $sampleGames = [
         <!-- Filter Section -->
         <div class="filter-section">
             <div class="row align-items-center">
+                <div class="col-md-4">
+                    <?php include 'components/search_input.php'; ?>
+                </div>
                 <div class="col-md-3">
                     <label class="mb-2" for="genreFilter"><i class="fa-solid fa-filter"></i> Filter by Genre:</label>
                     <select id="genreFilter" class="form-select">
@@ -195,7 +200,7 @@ $sampleGames = [
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-9 text-end">
+                <div class="col-md-5 text-end">
                     <span id="gameCount" class="text-muted">
                         Showing <strong><?php echo count($sampleGames); ?></strong> games
                     </span>
@@ -216,16 +221,24 @@ $sampleGames = [
 
     <script src="vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Genre filter functionality
-        document.getElementById('genreFilter').addEventListener('change', function() {
-            const selectedGenre = this.value;
-            const gameItems = document.querySelectorAll('.game-item');
+        // Filter and search functionality
+        const searchInput = document.getElementById('searchInput');
+        const genreFilter = document.getElementById('genreFilter');
+        const gameItems = document.querySelectorAll('.game-item');
+        const gameCount = document.getElementById('gameCount');
+
+        function filterGames() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedGenre = genreFilter.value;
             let visibleCount = 0;
 
             gameItems.forEach(item => {
+                const gameName = item.querySelector('.game-title').textContent.toLowerCase();
                 const gameGenre = item.getAttribute('data-genre');
+                const matchesSearch = gameName.includes(searchTerm);
+                const matchesGenre = selectedGenre === 'all' || gameGenre === selectedGenre;
 
-                if (selectedGenre === 'all' || gameGenre === selectedGenre) {
+                if (matchesSearch && matchesGenre) {
                     item.classList.remove('hidden');
                     visibleCount++;
                 } else {
@@ -234,9 +247,12 @@ $sampleGames = [
             });
 
             // Update game count
-            document.getElementById('gameCount').innerHTML =
+            gameCount.innerHTML =
                 `Showing <strong>${visibleCount}</strong> game${visibleCount !== 1 ? 's' : ''}`;
-        });
+        }
+
+        searchInput.addEventListener('input', filterGames);
+        genreFilter.addEventListener('change', filterGames);
     </script>
 </body>
 
