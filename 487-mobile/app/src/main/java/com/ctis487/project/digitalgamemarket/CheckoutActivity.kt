@@ -1,5 +1,6 @@
 package com.ctis487.project.digitalgamemarket
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -27,6 +28,10 @@ class CheckoutActivity : AppCompatActivity() {
     private var currentGame: Game? = null
     private val apiService by lazy { ApiClient.getClient().create(GameMarketApiService::class.java) }
     private val db by lazy { DigitalGameAssetRoomDatabase.getDatabase(this) }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.setLocale(newBase, LocaleHelper.getLanguage(newBase)))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,7 +99,7 @@ class CheckoutActivity : AppCompatActivity() {
 
                 // 16 digits
                 val trimmed = if (digitsOnly.length > 16) {
-                    digitsOnly.substring(0, 16)
+                    digitsOnly.take(16)
                 } else {
                     digitsOnly
                 }
@@ -132,13 +137,13 @@ class CheckoutActivity : AppCompatActivity() {
 
                 // Limit to 4 digits (MMYY)
                 val trimmed = if (digitsOnly.length > 4) {
-                    digitsOnly.substring(0, 4)
+                    digitsOnly.take(4)
                 } else {
                     digitsOnly
                 }
 
                 val formatted = if (trimmed.length >= 2) {
-                    "${trimmed.substring(0, 2)}/${trimmed.substring(2)}"
+                    "${trimmed.take(2)}/${trimmed.substring(2)}"
                 } else {
                     trimmed
                 }
@@ -154,8 +159,8 @@ class CheckoutActivity : AppCompatActivity() {
 
     fun renderGame(game: Game) {
         binding.checkoutTxtGameTitle.text = game.name
-        binding.checkoutTxtGamePrice.text = "${game.price} $"
-        binding.checkoutTxtDetails.text = "Total: ${game.price} $ (${game.name})"
+        binding.checkoutTxtGamePrice.text = getString(R.string.format_price, game.price.toString())
+        binding.checkoutTxtDetails.text = getString(R.string.format_total, game.price, game.name)
         binding.checkoutTxtGameDetails.text = game.description
 
         Glide.with(this)
@@ -205,14 +210,14 @@ class CheckoutActivity : AppCompatActivity() {
                     if (response.isSuccessful && response.body()?.success == true) {
                         Toast.makeText(
                             this@CheckoutActivity,
-                            "Checkout successful! You now own ${game.name}",
+                            getString(R.string.toast_checkout_success, game.name),
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
                     } else {
                         Toast.makeText(
                             this@CheckoutActivity,
-                            "Checkout failed: ${response.body()?.message ?: "Unknown error"}",
+                            getString(R.string.toast_checkout_failed, response.body()?.message ?: "Unknown error"),
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -222,7 +227,7 @@ class CheckoutActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@CheckoutActivity,
-                        "Checkout error: ${e.message}",
+                        getString(R.string.toast_checkout_error, e.message),
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -237,56 +242,56 @@ class CheckoutActivity : AppCompatActivity() {
         cvc: String
     ): Boolean {
         if (cardName.isEmpty()) {
-            binding.editTextCardName.error = "Card name is required"
+            binding.editTextCardName.error = getString(R.string.error_card_name_required)
             binding.editTextCardName.requestFocus()
             return false
         }
 
         if (cardName.length < 3) {
-            binding.editTextCardName.error = "Card name is too short"
+            binding.editTextCardName.error = getString(R.string.error_card_name_too_short)
             binding.editTextCardName.requestFocus()
             return false
         }
 
         if (cardNumber.isEmpty()) {
-            binding.editTextCardNumber.error = "Card number is required"
+            binding.editTextCardNumber.error = getString(R.string.error_card_number_required)
             binding.editTextCardNumber.requestFocus()
             return false
         }
 
         val cleanCardNumber = cardNumber.replace("\\s".toRegex(), "")
         if (!cleanCardNumber.matches("\\d{16}".toRegex())) {
-            binding.editTextCardNumber.error = "Invalid card number (16 digits required)"
+            binding.editTextCardNumber.error = getString(R.string.error_card_number_invalid_length)
             binding.editTextCardNumber.requestFocus()
             return false
         }
 
         if (!isValidCardNumber(cleanCardNumber)) {
-            binding.editTextCardNumber.error = "Invalid card number"
+            binding.editTextCardNumber.error = getString(R.string.error_card_number_invalid)
             binding.editTextCardNumber.requestFocus()
             return false
         }
 
         if (expiryDate.isEmpty()) {
-            binding.editTextExpiryDate.error = "Expiry date is required"
+            binding.editTextExpiryDate.error = getString(R.string.error_expiry_required)
             binding.editTextExpiryDate.requestFocus()
             return false
         }
 
         if (!isValidExpiryDate(expiryDate)) {
-            binding.editTextExpiryDate.error = "Invalid expiry date (use MM/YY format)"
+            binding.editTextExpiryDate.error = getString(R.string.error_expiry_invalid)
             binding.editTextExpiryDate.requestFocus()
             return false
         }
 
         if (cvc.isEmpty()) {
-            binding.editTextCVC.error = "CVC is required"
+            binding.editTextCVC.error = getString(R.string.error_cvc_required)
             binding.editTextCVC.requestFocus()
             return false
         }
 
         if (!cvc.matches("\\d{3}".toRegex())) {
-            binding.editTextCVC.error = "Invalid CVC (3 digits required)"
+            binding.editTextCVC.error = getString(R.string.error_cvc_invalid)
             binding.editTextCVC.requestFocus()
             return false
         }
