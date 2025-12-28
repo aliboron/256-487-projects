@@ -12,6 +12,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
 }
 
 $userId = $_SESSION['user_id'];
+$featuredGames=[];
 
 //Dummy userId
 //$userId = 35;

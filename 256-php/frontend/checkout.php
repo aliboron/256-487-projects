@@ -4,50 +4,32 @@ $gameId = $_GET['game_id'] ?? null;
 
 // If no game ID provided, redirect to store
 if (!$gameId) {
-    header('Location: index.php');
+    header('Location: not-found.php');
     exit();
 }
 
-// Sample game data - will be replaced with API call later
-// In production, fetch game details from API using $gameId
-$sampleGames = [
-    30 => [
-        "id" => 30,
-        "name" => "Super Smash Bros. Melee",
-        "description" => "Super Smash Bros. Melee includes all playable characters from the first game and adds characters from franchises such as Fire Emblem. Its major focus is the multiplayer mode.",
-        "price" => 59.99,
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co21yv.jpg",
-        "genre" => "Fighting",
-        "developer" => "HAL Laboratory"
-    ],
-    38 => [
-        "id" => 38,
-        "name" => "Mass Effect 2",
-        "description" => "It is time to bring together your greatest allies and recruit the galaxy's fighting elite to continue the resistance against the invading Reapers.",
-        "price" => 19.99,
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co20ac.jpg",
-        "genre" => "Shooter",
-        "developer" => "BioWare"
-    ],
-    37 => [
-        "id" => 37,
-        "name" => "Red Dead Redemption 2",
-        "description" => "Red Dead Redemption 2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
-        "price" => 59.99,
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co1q1f.jpg",
-        "genre" => "Shooter",
-        "developer" => "Rockstar Games"
-    ]
-];
+session_start();
 
-// Get game data
-$game = $sampleGames[$gameId] ?? null;
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
+    header('Location: login.php?redirect=checkout');
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+require_once __DIR__ . '/../api/db.php';
+
+$stmt = $db->prepare("select g.id,g.name,g.description,g.price, g.logo_path, g.genre, u.username as developer from games g, users u where g.developer_id = u.id and g.id=?") ;
+$stmt->execute([$gameId]) ;
+$game = $stmt->fetch(PDO::FETCH_ASSOC) ?? null;
 
 // If game not found, redirect to store
 if (!$game) {
-    header('Location: index.php');
+    header('Location: not-found.php');
     exit();
 }
+
+//var_dump($game);
 
 // Calculate tax and total (10% tax rate)
 $subtotal = $game['price'];
@@ -112,52 +94,19 @@ $activePage = 'checkout';
                     <h3 class="section-title"><i class="fa-solid fa-credit-card"></i> Payment Method</h3>
                     <div class="payment-methods">
                         <label class="payment-option">
-                            <input type="radio" name="payment_method" value="credit_card" checked>
-                            <div class="payment-option-content">
-                                <i class="fa-solid fa-credit-card"></i>
-                                <span>Credit Card</span>
-                            </div>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment_method" value="paypal">
-                            <div class="payment-option-content">
-                                <i class="fa-brands fa-paypal"></i>
-                                <span>PayPal</span>
-                            </div>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment_method" value="wallet">
+                            <input type="radio" name="payment_method" value="wallet" checked>
                             <div class="payment-option-content">
                                 <i class="fa-solid fa-wallet"></i>
                                 <span>Steam Wallet</span>
                             </div>
                         </label>
-                    </div>
-
-                    <!-- Credit Card Form (shown by default) -->
-                    <div id="creditCardForm" class="payment-form">
-                        <div class="form-group">
-                            <label for="cardNumber"><i class="fa-solid fa-credit-card"></i> Card Number</label>
-                            <input type="text" id="cardNumber" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="expiryDate"><i class="fa-solid fa-calendar"></i> Expiry Date</label>
-                                    <input type="text" id="expiryDate" class="form-control" placeholder="MM/YY" maxlength="5">
-                                </div>
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="credit_card" disabled>
+                            <div class="payment-option-content">
+                                <i class="fa-solid fa-credit-card"></i>
+                                <span><b>(On Construction)</b>Credit Card</span>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="cvv"><i class="fa-solid fa-lock"></i> CVV</label>
-                                    <input type="text" id="cvv" class="form-control" placeholder="123" maxlength="4">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="cardName"><i class="fa-solid fa-user"></i> Cardholder Name</label>
-                            <input type="text" id="cardName" class="form-control" placeholder="John Doe">
-                        </div>
+                        </label>
                     </div>
                 </div>
 
@@ -230,6 +179,12 @@ $activePage = 'checkout';
     </div>
 
     <script>
+        
+        const userId = <?= json_encode($userId) ?>;
+        const total = <?= json_encode($total) ?>;
+        const gameId= <?= json_encode($game["id"]) ?>;
+
+        
         // Check authentication on page load
         async function checkAuthentication() {
             try {
@@ -311,23 +266,11 @@ $activePage = 'checkout';
                 return;
             }
 
-            if (paymentMethod === 'credit_card') {
-                const cardNumber = document.getElementById('cardNumber').value;
-                const expiryDate = document.getElementById('expiryDate').value;
-                const cvv = document.getElementById('cvv').value;
-                const cardName = document.getElementById('cardName').value;
-
-                if (!cardNumber || !expiryDate || !cvv || !cardName) {
-                    alert('Please fill in all card details');
-                    return;
-                }
-            }
-
             // In production, this would make an API call to process the payment
             if (confirm('Complete your purchase for $<?php echo number_format($total, 2); ?>?')) {
                 // Simulate successful purchase
                 alert('Purchase successful! Game added to your library.');
-                window.location.href = 'library.php';
+                window.location.href = `buy.php?game_id=${gameId}&payment=${total}&user_id=${userId}`;
             }
         });
     </script>
