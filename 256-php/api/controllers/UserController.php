@@ -22,7 +22,6 @@ class User
             'username'      => $this->username,
             'email'         => $this->email,
             'phone'         => $this->phone,
-            // 'password'   => $this->password, // Typically hidden in API responses
             'gender'        => $this->gender,
             'type'          => $this->type,
             'is_verified'   => $this->is_verified,
@@ -58,10 +57,6 @@ class UserRepository
         $this->db = $db;
     }
 
-    /**
-     * Get all users
-     * @return User[]
-     */
     public function getAll(): array
     {
         $stmt = $this->db->prepare("SELECT * FROM users ORDER BY registered_at DESC");
@@ -74,9 +69,6 @@ class UserRepository
         return $users;
     }
 
-    /**
-     * Find user by ID
-     */
     public function find(int $id): ?User
     {
         $stmt = $this->db->prepare("SELECT * FROM users WHERE id = :id");
@@ -86,9 +78,6 @@ class UserRepository
         return $row ? User::fromArray($row) : null;
     }
 
-    /**
-     * Create a new user
-     */
     public function create(array $data): User
     {
         $stmt = $this->db->prepare("
@@ -111,15 +100,11 @@ class UserRepository
         return $this->find($id);
     }
 
-    /**
-     * Update a user
-     */
     public function update(int $id, array $data): ?User
     {
         $fields = [];
         $params = ['id' => $id];
 
-        // Allowed fields for update
         $allowedFields = ['username', 'email', 'phone', 'gender', 'type', 'is_verified', 'birth_date'];
 
         foreach ($allowedFields as $field) {
@@ -129,7 +114,6 @@ class UserRepository
             }
         }
 
-        // Handle password separately to ensure hashing
         if (isset($data['password'])) {
             $fields[] = "password = :password";
             $params['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
@@ -146,9 +130,6 @@ class UserRepository
         return $this->find($id);
     }
 
-    /**
-     * Delete a user
-     */
     public function delete(int $id): bool
     {
         $stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
@@ -156,17 +137,11 @@ class UserRepository
         return $stmt->rowCount() > 0;
     }
 
-    /**
-     * Delete a user (alias for delete method)
-     */
     public function deleteUser(int $id): bool
     {
         return $this->delete($id);
     }
 
-    /**
-     * Deactivate a user by setting is_verified to 0
-     */
     public function deactivateUser(int $id): bool
     {
         $stmt = $this->db->prepare("UPDATE users SET is_verified = 0 WHERE id = :id");
@@ -180,9 +155,6 @@ class UserRepository
         return $stmt->rowCount() > 0;
     }
 
-    /**
-     * Check if a user is verified
-     */
     public function isUserVerified(int $id): bool
     {
         $stmt = $this->db->prepare("SELECT is_verified FROM users WHERE id = :id");
@@ -227,7 +199,6 @@ class UserController
     {
         $input = json_decode(file_get_contents("php://input"), true) ?? [];
 
-        // Validate required fields based on schema
         $required = ['username', 'email', 'password'];
         foreach ($required as $field) {
             if (!isset($input[$field]) || $input[$field] === '') {

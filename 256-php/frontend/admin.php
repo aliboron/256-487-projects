@@ -13,10 +13,8 @@ if ($_SESSION['user_data']['type'] !== 'admin') {
 
 require_once __DIR__ . '/../api/db.php';
 
-// Get developer filter if set
 $developerFilter = $_GET['developer'] ?? null;
 
-// Build the query with optional developer filter
 if ($developerFilter) {
     $stmt = $db->prepare("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id AND g.developer_id = :developer_id");
     $stmt->execute(['developer_id' => $developerFilter]);
@@ -52,7 +50,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
 
 <body>
     <div class="admin-wrapper">
-        <!-- Sidebar -->
         <aside class="admin-sidebar">
             <div class="sidebar-brand">
                 <h4><i class="fa-solid fa-shield-halved"></i> Admin Panel</h4>
@@ -98,9 +95,7 @@ $activeSection = $_GET["section"] ?? "dashboard";
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="admin-content">
-            <!-- Dashboard Section -->
             <?php if ($activeSection === 'dashboard'): ?>
                 <div class="admin-header">
                     <h1>Dashboard</h1>
@@ -135,7 +130,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 </div>
             <?php endif; ?>
 
-            <!-- Pending Games Section -->
             <?php if ($activeSection === 'pending-games'): ?>
                 <div class="admin-header">
                     <h1>Pending Game Approvals</h1>
@@ -193,7 +187,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 </div>
             <?php endif; ?>
 
-            <!-- Approved Games Section -->
             <?php if ($activeSection === 'approved-games'): ?>
                 <div class="admin-header">
                     <h1>Approved Games</h1>
@@ -262,7 +255,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 </div>
             <?php endif; ?>
 
-            <!-- Developers Section -->
             <?php if ($activeSection === 'developers'): ?>
                 <div class="admin-header">
                     <h1>Game Developers</h1>
@@ -320,7 +312,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 </div>
             <?php endif; ?>
 
-            <!-- All Games Section -->
             <?php if ($activeSection === 'all-games'): ?>
                 <div class="admin-header">
                     <h1>All Games</h1>
@@ -396,7 +387,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
             <?php endif; ?>
         </main>
     </div>
-    <!-- Edit Game Modal -->
     <div class="modal fade" id="editGameModal" tabindex="-1" aria-labelledby="editGameModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" style="background: #1a1a1a; color: #ffffff;">
@@ -469,13 +459,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
     </script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
-        // document.addEventListener('click', function(e) {
-        //     if (e.target.classList.contains('btn-view')) {
-        //         e.preventDefault();
-        //         window.location.href = 'admin.php?section=all-games';
-        //     }
-        // });
-
         document.querySelectorAll('.btn-approve').forEach(btn => {
             btn.addEventListener('click', async function() {
                 if (confirm('Approve this game for publication?')) {
@@ -736,14 +719,12 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 const gameDescription = this.getAttribute('data-game-description');
                 const gamePrice = this.getAttribute('data-game-price');
 
-                // Populate modal fields
                 $('#editGameId').val(gameId);
                 $('#editGameName').val(gameName);
                 $('#editGameGenre').val(gameGenre);
                 $('#editGameDescription').val(gameDescription);
                 $('#editGamePrice').val(gamePrice);
 
-                // Show modal
                 const editModal = new bootstrap.Modal(document.getElementById('editGameModal'));
                 editModal.show();
             });
@@ -758,7 +739,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 price: parseFloat($('#editGamePrice').val())
             };
 
-            // Validate
             if (!gameData.name || !gameData.genre || !gameData.description || !gameData.price) {
                 alert('Please fill in all required fields.');
                 return;
@@ -769,7 +749,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
             saveBtn.prop('disabled', true);
             saveBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Saving...');
 
-            // Make PUT request
             $.ajax({
                 url: '/api/admin/games/' + gameId,
                 type: 'PATCH',
@@ -781,9 +760,7 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 success: function(response) {
                     if (response.success) {
                         alert('Game updated successfully!');
-                        // Close modal
                         bootstrap.Modal.getInstance(document.getElementById('editGameModal')).hide();
-                        // Reload page to show updated data
                         window.location.reload();
                     } else {
                         alert('Failed to update game: ' + (response.message || 'Unknown error'));

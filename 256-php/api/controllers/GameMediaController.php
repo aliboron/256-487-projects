@@ -137,9 +137,6 @@ class GameMediaController
         $this->repository = new GameMediaRepository($db);
     }
 
-    /**
-     * GET /media/all - List all media
-     */
     #[Route('/media/all', 'GET')]
     public function listAllMedia(): ApiResponse
     {
@@ -150,9 +147,6 @@ class GameMediaController
         return new ApiResponse(true, $media);
     }
 
-    /**
-     * GET /media/game/{game_id} - Get media for a specific game
-     */
     #[Route('/media/game/{game_id}', 'GET')]
     public function getMediaByGame(string $game_id): ApiResponse
     {
@@ -163,9 +157,6 @@ class GameMediaController
         return new ApiResponse(true, $media);
     }
 
-    /**
-     * GET /media/{id} - Get specific media entry
-     */
     #[Route('/media/{id}', 'GET')]
     public function getMedia(string $id): ApiResponse
     {
@@ -175,15 +166,11 @@ class GameMediaController
             : new ApiResponse(false, null, 'Media not found');
     }
 
-    /**
-     * POST /media - Create new media entry
-     */
     #[Route('/media', 'POST')]
     public function createMedia(): ApiResponse
     {
         $input = json_decode(file_get_contents("php://input"), true) ?? [];
 
-        // Validate required fields based on your DB screenshot
         $required = ['game_id', 'file_path', 'file_name'];
         foreach ($required as $field) {
             if (!isset($input[$field]) || $input[$field] === '') {
@@ -199,9 +186,6 @@ class GameMediaController
         }
     }
 
-    /**
-     * DELETE /media/{id} - Delete a media entry
-     */
     #[Route('/media/{id}', 'DELETE')]
     public function deleteMedia(string $id): ApiResponse
     {

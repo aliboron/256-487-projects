@@ -1,12 +1,4 @@
 <?php
-
-/**
- * Search Input Component
- * 
- * @param string $placeholder - Placeholder text (default: "Search by game name...")
- * @param string $inputId - ID for the input element (default: "searchInput")
- */
-
 $placeholderText = $placeholder ?? 'Search by game name...';
 $searchInputId = $inputId ?? 'searchInput';
 ?>

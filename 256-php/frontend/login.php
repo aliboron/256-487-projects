@@ -1,14 +1,11 @@
 <?php
 $activePage = 'login';
 
-// Start session
 session_start();
 
-// If user is already logged in, redirect to appropriate page
 if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
     $userType = $_SESSION['user_data']['type'] ?? 'user';
 
-    // Check if there's a redirect parameter
     $redirect = $_GET['redirect'] ?? '';
     $gameId = $_GET['game_id'] ?? '';
 
@@ -19,7 +16,6 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
         header('Location: ' . $redirect . '.php');
         exit;
     } else {
-        // Redirect based on user type
         if ($userType === 'game_developer') {
             header('Location: game_developer.php');
             exit;
@@ -53,7 +49,6 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
                     <div class="card-body p-4">
                         <h2 class="text-center mb-4 fw-bold">Welcome to Game Store</h2>
 
-                        <!-- Nav tabs -->
                         <ul class="nav nav-pills nav-justified mb-4" id="authTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="login-tab" data-bs-toggle="tab"
@@ -69,9 +64,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
                             </li>
                         </ul>
 
-                        <!-- Tab content -->
                         <div class="tab-content">
-                            <!-- Login Form -->
                             <div class="tab-pane fade show active" id="login" role="tabpanel">
                                 <form id="loginForm">
                                     <div class="mb-3">
@@ -91,7 +84,6 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
                                 </form>
                             </div>
 
-                            <!-- Register Form -->
                             <div class="tab-pane fade" id="register" role="tabpanel">
                                 <form id="registerForm">
                                     <div class="mb-3">
@@ -175,12 +167,10 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
     <script src="./vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Get URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const redirect = urlParams.get('redirect');
             const gameId = urlParams.get('game_id');
 
-            // Handle login form submission
             $('#loginForm').on('submit', function(e) {
                 e.preventDefault();
 
@@ -188,7 +178,6 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
                 const password = $('#login-password').val();
                 const submitBtn = $(this).find('button[type="submit"]');
 
-                // Disable button and show loading state
                 submitBtn.prop('disabled', true);
                 submitBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Logging in...');
 
@@ -201,25 +190,22 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
                         password: password
                     }),
                     xhrFields: {
-                        withCredentials: true // Include cookies
+                        withCredentials: true
                     },
                     success: function(response) {
                         console.log('Login successful:', response);
 
-                        // Store user data in localStorage
                         if (response.data && response.data.user) {
                             localStorage.setItem('userId', response.data.user.id);
                             localStorage.setItem('username', response.data.user.username);
                             localStorage.setItem('userType', response.data.user.type);
                         }
 
-                        // Handle redirect
                         if (redirect === 'checkout' && gameId) {
                             window.location.href = 'checkout.php?game_id=' + gameId;
                         } else if (redirect) {
                             window.location.href = redirect + '.php';
                         } else {
-                            // Redirect based on user type
                             if (response.data && response.data.user) {
                                 if (response.data.user.type === 'game_developer') {
                                     window.location.href = 'game_developer.php';
@@ -245,14 +231,12 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
 
                         alert(errorMsg);
 
-                        // Re-enable button
                         submitBtn.prop('disabled', false);
                         submitBtn.html('<i class="fa-solid fa-right-to-bracket"></i> Login');
                     }
                 });
             });
 
-            // Handle register form submission
             $('#registerForm').on('submit', function(e) {
                 e.preventDefault();
 
@@ -268,7 +252,6 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
 
                 const submitBtn = $(this).find('button[type="submit"]');
 
-                // Disable button and show loading state
                 submitBtn.prop('disabled', true);
                 submitBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Registering...');
 
@@ -278,19 +261,16 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
                     contentType: 'application/json',
                     data: JSON.stringify(formData),
                     xhrFields: {
-                        withCredentials: true // Include cookies
+                        withCredentials: true
                     },
                     success: function(response) {
                         console.log('Registration successful:', response);
                         alert('Registration successful! You can now login.');
 
-                        // Switch to login tab
                         $('#login-tab').tab('show');
 
-                        // Clear form
                         $('#registerForm')[0].reset();
 
-                        // Re-enable button
                         submitBtn.prop('disabled', false);
                         submitBtn.html('<i class="fa-solid fa-user-plus"></i> Register');
                     },
@@ -306,14 +286,12 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
 
                         alert(errorMsg);
 
-                        // Re-enable button
                         submitBtn.prop('disabled', false);
                         submitBtn.html('<i class="fa-solid fa-user-plus"></i> Register');
                     }
                 });
             });
 
-            // Handle guest button
             $('#guestBtn').on('click', function() {
                 window.location.href = 'index.php';
             });

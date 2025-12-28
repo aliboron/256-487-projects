@@ -157,9 +157,7 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="developer-content">
-            <!-- Approval Warning -->
             <?php if (!$isDeveloperApproved): ?>
                 <div class="approval-warning">
                     <i class="fa-solid fa-exclamation-triangle"></i>
@@ -170,7 +168,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 </div>
             <?php endif; ?>
 
-            <!-- Dashboard Section -->
             <?php if ($activeSection === 'dashboard'): ?>
                 <div class="developer-header">
                     <h1>Developer Dashboard</h1>
@@ -207,14 +204,12 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 <?php endif; ?>
             <?php endif; ?>
 
-            <!-- My Games Section -->
             <?php if ($activeSection === 'my-games' && $isDeveloperApproved): ?>
                 <div class="developer-header">
                     <h1>My Games</h1>
                     <p>Manage your published games and track their status.</p>
                 </div>
 
-                <!-- Filter Bar -->
                 <div class="filter-bar">
                     <label for="statusFilter"><i class="fa-solid fa-filter"></i> Filter by Status:</label>
                     <select id="statusFilter" onchange="window.location.href='?section=my-games&status=' + this.value">
@@ -296,7 +291,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 </div>
             <?php endif; ?>
 
-            <!-- Add New Game Section -->
             <?php if ($activeSection === 'add-game' && $isDeveloperApproved): ?>
                 <div class="developer-header">
                     <h1>Add New Game</h1>
@@ -367,7 +361,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 </div>
             <?php endif; ?>
 
-            <!-- Gamers Section -->
             <?php if ($activeSection === 'gamers' && $isDeveloperApproved): ?>
                 <div class="developer-header">
                     <h1>Gamers</h1>
@@ -410,7 +403,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
         </main>
     </div>
 
-    <!-- Edit Game Modal -->
     <div class="modal fade" id="editGameModal" tabindex="-1" aria-labelledby="editGameModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" style="background: #1a1a1a; color: #ffffff;">
@@ -524,7 +516,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 imagePreview.innerHTML = '';
             });
         });
-        // Image upload preview
         const imageInput = document.getElementById('gameImages');
         const imagePreview = document.getElementById('imagePreview');
 
@@ -753,7 +744,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
             });
         });
 
-        // Edit game functionality
         document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', function() {
                 const gameId = this.getAttribute('data-game-id');
@@ -762,20 +752,17 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 const gameDescription = this.getAttribute('data-game-description');
                 const gamePrice = this.getAttribute('data-game-price');
 
-                // Populate modal fields
                 $('#editGameId').val(gameId);
                 $('#editGameName').val(gameName);
                 $('#editGameGenre').val(gameGenre);
                 $('#editGameDescription').val(gameDescription);
                 $('#editGamePrice').val(gamePrice);
 
-                // Show modal
                 const editModal = new bootstrap.Modal(document.getElementById('editGameModal'));
                 editModal.show();
             });
         });
 
-        // Save game changes
         $('#saveGameChanges').on('click', function() {
             const gameId = $('#editGameId').val();
             const gameData = {
@@ -785,7 +772,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 price: parseFloat($('#editGamePrice').val())
             };
 
-            // Validate
             if (!gameData.name || !gameData.genre || !gameData.description || !gameData.price) {
                 alert('Please fill in all required fields.');
                 return;
@@ -796,7 +782,6 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
             saveBtn.prop('disabled', true);
             saveBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Saving...');
 
-            // Make PUT request
             $.ajax({
                 url: '/api/developers/<?php echo $_SESSION['user_id']; ?>/games/' + gameId,
                 type: 'PUT',
@@ -808,9 +793,7 @@ $pendingGamesCount = count(array_filter($myGames, function ($game) {
                 success: function(response) {
                     if (response.success) {
                         alert('Game updated successfully!');
-                        // Close modal
                         bootstrap.Modal.getInstance(document.getElementById('editGameModal')).hide();
-                        // Reload page to show updated data
                         window.location.reload();
                     } else {
                         alert('Failed to update game: ' + (response.message || 'Unknown error'));

@@ -31,12 +31,10 @@ class HealthController
             );
         }
 
-        // Get user information from session
         ensureSession();
         $userId = $_SESSION['user_id'];
         $userData = $_SESSION['user_data'] ?? null;
 
-        // If user data is not in session, fetch from database
         if (!$userData) {
             $stmt = $this->db->prepare("SELECT id, username, email, type FROM users WHERE id = ?");
             $stmt->execute([$userId]);

@@ -16,7 +16,6 @@ foreach ($lines as $line) {
     $key = trim($key);
     $value = trim($value);
 
-    // remove quotes if exist
     $value = trim($value, "\"'");
 
     putenv("$key=$value");

@@ -1,16 +1,12 @@
 <?php
-// Start session to check user authentication
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// $activePage should be set before including this file
-// Possible values: 'store', 'library', 'login', 'developer', 'admin'
 if (!isset($activePage)) {
     $activePage = '';
 }
 
-// Check if user is logged in
 $isLoggedIn = isset($_SESSION['user_id']) && isset($_SESSION['user_data']);
 $username = $isLoggedIn ? $_SESSION['user_data']['username'] : '';
 $userType = $isLoggedIn ? $_SESSION['user_data']['type'] : '';
@@ -29,7 +25,6 @@ $userType = $isLoggedIn ? $_SESSION['user_data']['type'] : '';
                 <li class="nav-item">
                     <a class="nav-link <?php echo $activePage === 'library' ? 'active' : ''; ?>" href="library.php"><i class="fa-solid fa-book"></i> Library</a>
                 </li>
-                <!-- Developer Dashboard (shown only for game developers) -->
                 <?php if ($isLoggedIn && $userType === 'game_developer'): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo $activePage === 'developer' ? 'active' : ''; ?>" href="game_developer.php">
@@ -37,7 +32,6 @@ $userType = $isLoggedIn ? $_SESSION['user_data']['type'] : '';
                         </a>
                     </li>
                 <?php endif; ?>
-                <!-- Admin Dashboard (shown only for admins) -->
                 <?php if ($isLoggedIn && $userType === 'admin'): ?>
                     <li class="nav-item">
                         <a class="nav-link <?php echo $activePage === 'admin' ? 'active' : ''; ?>" href="admin.php">
@@ -45,7 +39,6 @@ $userType = $isLoggedIn ? $_SESSION['user_data']['type'] : '';
                         </a>
                     </li>
                 <?php endif; ?>
-                <!-- Login/User Section -->
                 <?php if ($isLoggedIn): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

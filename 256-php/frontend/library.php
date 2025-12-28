@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
@@ -17,19 +16,13 @@ require_once __DIR__ . '/../api/db.php';
 $userId = $_SESSION['user_id'];
 $featuredGames = [];
 
-//Dummy userId
-//$userId = 35;
-//var_dump($userId);
-
 $stmt = $db->prepare("select * from games");
 $stmt->execute();
 $allGames = $stmt->fetchAll(PDO::FETCH_ASSOC);
-//var_dump($allGames);
 
 $stmtCheckouts = $db->prepare("select * from checkouts where user_id = ?");
 $stmtCheckouts->execute([$userId]);
 $userCheckouts = $stmtCheckouts->fetchAll(PDO::FETCH_ASSOC);
-//var_dump($userCheckouts);
 
 $libraryGames = [];
 
@@ -45,9 +38,7 @@ foreach ($userCheckouts as $checkout) {
         }
     }
 }
-//var_dump($libraryGames);
 
-// Calculate total hours played
 $totalHours = 0;
 
 foreach ($libraryGames as $game) {
@@ -73,10 +64,8 @@ foreach ($libraryGames as $game) {
 </head>
 
 <body>
-    <!-- Navigation -->
     <?php include 'components/navbar.php'; ?>
 
-    <!-- Hero Section -->
     <section class="hero-section">
         <div class="container">
             <h1>My Library</h1>
@@ -84,9 +73,7 @@ foreach ($libraryGames as $game) {
         </div>
     </section>
 
-    <!-- Main Content -->
     <div class="container">
-        <!-- Stats Section -->
         <div class="stats-section">
             <div class="row g-3">
                 <?php
@@ -108,7 +95,6 @@ foreach ($libraryGames as $game) {
             </div>
         </div>
 
-        <!-- Filter Section -->
         <div class="filter-section">
             <div class="row align-items-center">
                 <div class="col-md-3">
@@ -119,7 +105,6 @@ foreach ($libraryGames as $game) {
                     <select id="genreFilter" class="form-select">
                         <option value="all">All Genres</option>
                         <?php
-                        // Extract unique genres
                         $genres = array_unique(array_column($libraryGames, 'genre'));
                         sort($genres);
                         foreach ($genres as $genre):
@@ -146,7 +131,6 @@ foreach ($libraryGames as $game) {
             </div>
         </div>
 
-        <!-- Games Grid -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 games-grid">
             <?php foreach ($libraryGames as $game): ?>
                 <?php
@@ -168,7 +152,6 @@ foreach ($libraryGames as $game) {
 
     <script src="vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Filter, sort, and search functionality
         const searchInput = document.getElementById('searchInput');
         const genreFilter = document.getElementById('genreFilter');
         const sortBy = document.getElementById('sortBy');
@@ -181,7 +164,6 @@ foreach ($libraryGames as $game) {
             const sortOrder = sortBy.value;
             let visibleGames = [];
 
-            // Filter games
             gameItems.forEach(item => {
                 const gameName = item.getAttribute('data-name').toLowerCase();
                 const gameGenre = item.getAttribute('data-genre');
@@ -196,7 +178,6 @@ foreach ($libraryGames as $game) {
                 }
             });
 
-            // Sort games
             const parent = visibleGames[0]?.parentElement;
             if (parent) {
                 visibleGames.sort((a, b) => {
@@ -217,7 +198,6 @@ foreach ($libraryGames as $game) {
                 });
             }
 
-            // Update count
             gameCount.innerHTML =
                 `Showing <strong>${visibleGames.length}</strong> game${visibleGames.length !== 1 ? 's' : ''}`;
         }

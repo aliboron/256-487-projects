@@ -5,19 +5,14 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/authHelper.php';
 
-// Ensure session is started for all API requests
 ensureSession();
 
-// Create endpoint manager
 $manager = new EndpointManager();
 
-// Register all controllers from /controllers (inside this folder)
 registerControllersFromDir($manager, __DIR__ . '/controllers');
 
-// Get HTTP method and path
 $method = $_SERVER['REQUEST_METHOD'];
 
-// $requestPath comes from restUtil.php
 global $requestPath;
 
 $endpoint = $manager->find($method, $requestPath);

@@ -10,7 +10,6 @@ class LoginController
         $this->db = $db;
     }
 
-    /* ================= LOGIN ================= */
     #[Route("/login", "POST")]
     public function login()
     {
@@ -29,7 +28,6 @@ class LoginController
             return;
         }
 
-        // Start session and store user data
         ensureSession();
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
@@ -56,7 +54,6 @@ class LoginController
     }
 
     #[Route("/register", "POST")]
-    /* ================= REGISTER ================= */
     public function register()
     {
         $data = json_decode(file_get_contents("php://input"), true);
@@ -73,7 +70,6 @@ class LoginController
             return new ApiResponse(false, null, "Invalid login options.");
         }
 
-        // unique user check
         $check = $this->db->prepare("SELECT id FROM users WHERE username = ?");
         $check->execute([$username]);
         if ($check->fetch()) {
@@ -89,7 +85,6 @@ class LoginController
 
         $userId = $this->db->lastInsertId();
 
-        // Start session and store user data
         ensureSession();
         session_regenerate_id(true);
         $_SESSION['user_id'] = $userId;
@@ -118,10 +113,8 @@ class LoginController
     }
 
     #[Route("/login/guest", "POST")]
-    /* ================= GUEST ================= */
     public function guest()
     {
-        // Guest kullanıcı DB’ye yazılmak zorunda değil        ensureSession();
         session_regenerate_id(true);
         $token = bin2hex(random_bytes(32));
 
@@ -131,7 +124,6 @@ class LoginController
     }
 
     #[Route("/logout", "POST")]
-    /* ================= LOGOUT ================= */
     public function logout()
     {
         logout();
@@ -140,7 +132,6 @@ class LoginController
     }
 
     #[Route("/auth/me", "GET")]
-    /* ================= GET CURRENT USER ================= */
     public function getCurrentUser()
     {
         ensureSession();
@@ -150,7 +141,6 @@ class LoginController
             return new ApiResponse(false, null, "Not authenticated");
         }
 
-        // Fetch fresh user data from database
         $stmt = $this->db->prepare("SELECT id, username, email, type, is_verified FROM users WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -163,9 +153,6 @@ class LoginController
         return new ApiResponse(true, $user, "User retrieved successfully");
     }
 
-
-
-    /* ================= TOKEN ================= */
     private function createToken(int $userId): string
     {
         $token = session_id();
