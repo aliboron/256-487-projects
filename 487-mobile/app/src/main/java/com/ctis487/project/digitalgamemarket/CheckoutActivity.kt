@@ -46,6 +46,7 @@ class CheckoutActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val gameId = intent.getIntExtra("gameId", 21)
+        val price = intent.getDoubleExtra("price", 0.0)
 
         val gameRepository = GameRepository(db.gameDAO(), apiService)
 
@@ -53,7 +54,7 @@ class CheckoutActivity : AppCompatActivity() {
         db.gameDAO().getGameById(gameId).observe(this) { gameOrNull ->
             if (gameOrNull != null) {
                 currentGame = gameOrNull
-                renderGame(gameOrNull)
+                renderGame(gameOrNull, price)
             } else {
                 Log.d("CheckoutActivity", "Game $gameId not in DB. Fetching from API.")
                 lifecycleScope.launch(Dispatchers.IO) {
@@ -63,7 +64,7 @@ class CheckoutActivity : AppCompatActivity() {
                     if (apiGame != null) {
                         withContext(Dispatchers.Main) {
                             currentGame = apiGame
-                            renderGame(apiGame)
+                            renderGame(apiGame, price)
                         }
                         db.gameDAO().insert(apiGame)
                     } else
@@ -162,10 +163,12 @@ class CheckoutActivity : AppCompatActivity() {
         })
     }
 
-    fun renderGame(game: Game) {
+    fun renderGame(game: Game, priceParam : Double) {
+
+        var price = if (priceParam == 0.0) game.price else priceParam
         binding.checkoutTxtGameTitle.text = game.name
-        binding.checkoutTxtGamePrice.text = getString(R.string.format_price, game.price.toString())
-        binding.checkoutTxtDetails.text = getString(R.string.format_total, game.price, game.name)
+        binding.checkoutTxtGamePrice.text = getString(R.string.format_price, price.toString())
+        binding.checkoutTxtDetails.text = getString(R.string.format_total, price, game.name)
         binding.checkoutTxtGameDetails.text = game.description
 
         Glide.with(this)

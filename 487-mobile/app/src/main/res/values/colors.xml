@@ -14,4 +14,8 @@
     <color name="steam_accent_blue">#66c0f4</color> <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#8F98A0</color> <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
+
+    <color name="gold_dark">#B78727</color>
+    <color name="gold_medium">#FBC02D</color>
+    <color name="gold_light">#FFF176</color>
 </resources>
