@@ -54,6 +54,21 @@ class AdminController
 
         return new ApiResponse(true, $updatedDeveloper?->toArray());
     }
+    #[Route('/admin/developer/{developerId}/activate', 'PATCH')]
+    public function activateDeveloper(int $developerId): ApiResponse
+    {
+        $developer = $this->repository->find($developerId);
+        if (!$developer) {
+            return new ApiResponse(false, null, 'Developer not found');
+        }
+
+        if (!$this->repository->activateUser($developerId)) {
+            return new ApiResponse(false, null, 'Activation failed');
+        }
+        $updatedDeveloper = $this->repository->find($developerId);
+
+        return new ApiResponse(true, $updatedDeveloper?->toArray());
+    }
 
     #[Route('/admin/developer/{developerId}', 'GET')]
     public function getGamesByDeveloper(string $developerId): ApiResponse
@@ -65,12 +80,12 @@ class AdminController
         return new ApiResponse(true, $games);
     }
 
-    #[Route('/admin/games/{gameid}', 'PATCH')]
+    #[Route('/admin/games/{id}', 'PATCH')]
     public function updateGame(string $id): ApiResponse
     {
         $input = json_decode(file_get_contents("php://input"), true) ?? [];
 
-        $game = $this->repository->find((int)$id);
+        $game = $this->game_repository->find((int)$id);
         if (!$game) {
             return new ApiResponse(false, null, 'Game not found');
         }
