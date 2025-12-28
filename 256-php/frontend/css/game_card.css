@@ -26,8 +26,8 @@
 
 .game-card:hover {
     transform: translateY(-5px);
-    border-color: #3a3a3a;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    /*border-color: #3a3a3a;*/
+    /*box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);*/
 }
 
 .game-card-img {
@@ -175,4 +175,34 @@
     border-color: #e22020;
     color: #ffffff;
     text-decoration: none;
+}
+
+.featured-card {
+    position: relative;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 0, 0.6);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 0, 0.35) inset,
+        0 0 12px rgba(255, 255, 0, 0.6),
+        0 0 28px rgba(255, 255, 0, 0.3);
+}
+
+/* Optional: subtle pulsing glow */
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 0, 0.35) inset,
+            0 0 12px rgba(255, 255, 0, 0.6),
+            0 0 28px rgba(255, 255, 0, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 0 0 1px rgba(255, 255, 0, 0.35) inset,
+            0 0 18px rgba(255, 255, 0, 0.75),
+            0 0 36px rgba(255, 255, 0, 0.45);
+    }
+}
+
+.featured-card.glow {
+    animation: glowPulse 2.5s ease-in-out infinite;
 }
