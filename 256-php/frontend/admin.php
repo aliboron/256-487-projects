@@ -1,18 +1,40 @@
 <?php
-    require_once __DIR__ . '/../api/db.php';
-   $allGames = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
-    $approvedGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-   $developers = $db->query("
+session_start();
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
+    header('Location: login.php?redirect=admin');
+    exit;
+}
+
+if ($_SESSION['user_data']['type'] !== 'admin') {
+    header('Location: index.php');
+    exit;
+}
+
+require_once __DIR__ . '/../api/db.php';
+
+// Get developer filter if set
+$developerFilter = $_GET['developer'] ?? null;
+
+// Build the query with optional developer filter
+if ($developerFilter) {
+    $stmt = $db->prepare("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id AND g.developer_id = :developer_id");
+    $stmt->execute(['developer_id' => $developerFilter]);
+    $allGames = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $allGames = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
+}
+$approvedGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$developers = $db->query("
          SELECT u.*, COUNT(g.id) AS game_count
     FROM users u
     LEFT JOIN games g ON g.developer_id = u.id
-     WHERE 
-     u.type = 'game_developer'
+     WHERE u.type = 'game_developer'
     GROUP BY u.id
     ")->fetchAll(PDO::FETCH_ASSOC);
-    $developersGame=$db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
-    $pendingGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-    $activeSection=$_GET["section"]??"dashboard";
+$developersGame = $db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
+$pendingGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$activeSection = $_GET["section"] ?? "dashboard";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -143,7 +165,7 @@
                             <tbody>
                                 <?php foreach ($pendingGames as $game): ?>
                                     <tr>
-                                          <td>
+                                        <td>
                                             <?php
                                             $path = $game['logo_path'] ?? null;
                                             $imgSrc = $path
@@ -155,12 +177,12 @@
                                                 class="game-thumbnail">
                                         </td>
                                         <td style="color: #ffffff;"><?= $game['name'] ?></td>
-                                        <td><?=  $game['username'] ?></td>
-                                        <td><?=   $game['genre'] ?></td>
+                                        <td><?= $game['username'] ?></td>
+                                        <td><?= $game['genre'] ?></td>
                                         <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
-                                        <td><?=  $game['created_at'] ?></td>
+                                        <td><?= $game['created_at'] ?></td>
                                         <td>
-                                                  <button class="btn-action btn-approve" data-game-id="<?= $game['id'] ?>"><i class="fa-solid fa-check"></i> Approve</button>
+                                            <button class="btn-action btn-approve" data-game-id="<?= $game['id'] ?>"><i class="fa-solid fa-check"></i> Approve</button>
                                             <button class="btn-action btn-reject" data-game-id="<?= $game['id'] ?>"><i class="fa-solid fa-times"></i> Reject</button>
                                         </td>
                                     </tr>
@@ -201,7 +223,7 @@
                             <tbody>
                                 <?php foreach ($approvedGames as $game): ?>
                                     <tr>
-                                         <td>
+                                        <td>
                                             <?php
                                             $path = $game['logo_path'] ?? null;
                                             $imgSrc = $path
@@ -212,14 +234,14 @@
                                                 alt="<?= htmlspecialchars($game['name'] ?? 'Game') ?>"
                                                 class="game-thumbnail">
                                         </td>
-                                        <td style="color: #ffffff;"><?=  $game['name'] ?></td>
+                                        <td style="color: #ffffff;"><?= $game['name'] ?></td>
                                         <td><?= $game['username'] ?></td>
-                                        <td><?=  $game['genre'] ?></td>
-                                        <td style="color: #4CAF50;">$<?=  $game['price'] ?></td>
+                                        <td><?= $game['genre'] ?></td>
+                                        <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
                                         <td>
-                                        <?php if (isset($game['is_approved'])&&$game['is_approved']==1): ?>
-                                            <span class="badge badge-success">Active</span>
-                                        <?php endif; ?>
+                                            <?php if (isset($game['is_approved']) && $game['is_approved'] == 1): ?>
+                                                <span class="badge badge-success">Active</span>
+                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <button class="btn-action btn-edit"
@@ -270,25 +292,25 @@
                                 <?php foreach ($developers as $dev): ?>
                                     <tr>
                                         <td style="color: #ffffff;"><i class="fa-solid fa-user"></i> <?= $dev['username'] ?></td>
-                                        <td><?=   $dev['email'] ?></td>
-                                        <td><?=    $dev['game_count'] ?> games</td>
+                                        <td><?= $dev['email'] ?></td>
+                                        <td><?= $dev['game_count'] ?> games</td>
                                         <td>
-                                        <?php if (isset($dev['is_verified'])&&$dev['is_verified']==1): ?>
-                                            <span class="badge badge-success">Active</span>
-                                        <?php elseif(isset($dev['is_verified'])&&$dev['is_verified']==0): ?>
-                                            <span class="badge badge-danger">Passive</span>   
-                                        <?php endif; ?>
+                                            <?php if (isset($dev['is_verified']) && $dev['is_verified'] == 1): ?>
+                                                <span class="badge badge-success">Active</span>
+                                            <?php elseif (isset($dev['is_verified']) && $dev['is_verified'] == 0): ?>
+                                                <span class="badge badge-danger">Passive</span>
+                                            <?php endif; ?>
                                         </td>
-                                        <td><?=   $dev['registered_at'] ?></td>
+                                        <td><?= $dev['registered_at'] ?></td>
                                         <td>
-                                            <button class="btn-action btn-view"><i class="fa-solid fa-eye"></i> View Games</button>
-                                            <?php if (isset($dev['is_verified'])&&$dev['is_verified']==1): ?>
-                                            <button class="btn-action btn-deactivate" id="btnDeveloperDeactivate" data-developer-id='<?= $dev['id']?>'><i class="fa-solid fa-ban"></i> Deactivate</button>
-                                            <?php elseif(isset($dev['is_verified'])&&$dev['is_verified']==0): ?>
-                                            <button class="btn-action btn-activate" id="btnDeveloperActivate" data-developer-id='<?= $dev['id']?>'><i class="fa-solid fa-check"></i> Activate</button>
-                                         <?php endif; ?>
-                                            
-                                            <button class="btn-action btn-delete"id="btnDeveloperDel" data-developer-id='<?= $dev['id']?>'><i class="fa-solid fa-trash"></i> Delete</button>
+                                            <button class="btn-action btn-view" data-developer-id="<?= $dev["id"] ?>"><i class="fa-solid fa-eye"></i> View Games</button>
+                                            <?php if (isset($dev['is_verified']) && $dev['is_verified'] == 1): ?>
+                                                <button class="btn-action btn-deactivate" id="btnDeveloperDeactivate" data-developer-id='<?= $dev['id'] ?>'><i class="fa-solid fa-ban"></i> Deactivate</button>
+                                            <?php elseif (isset($dev['is_verified']) && $dev['is_verified'] == 0): ?>
+                                                <button class="btn-action btn-activate" id="btnDeveloperActivate" data-developer-id='<?= $dev['id'] ?>'><i class="fa-solid fa-check"></i> Activate</button>
+                                            <?php endif; ?>
+
+                                            <button class="btn-action btn-delete" id="btnDeveloperDel" data-developer-id='<?= $dev['id'] ?>'><i class="fa-solid fa-trash"></i> Delete</button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -303,6 +325,19 @@
                 <div class="admin-header">
                     <h1>All Games</h1>
                     <p>View and manage all games in the system.</p>
+                    <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+                        <label for="developer-filter" style="color: #ffffff; font-weight: 500;">
+                            <i class="fa-solid fa-filter"></i> Filter by Developer:
+                        </label>
+                        <select id="developer-filter" class="form-select" style="width: 300px; background-color: #2a2a2a; color: #ffffff; border: 1px solid #444; border-radius: 8px; padding: 8px 12px;">
+                            <option value="">All Developers</option>
+                            <?php foreach ($developers as $dev): ?>
+                                <option value="<?= $dev['id'] ?>" <?= $developerFilter == $dev['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($dev['username']) ?> (<?= $dev['game_count'] ?> games)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="section-card">
@@ -321,41 +356,38 @@
                         <tbody>
                             <?php foreach ($allGames as $game): ?>
                                 <tr>
-                                     <td>
-                                            <?php
-                                            $path = $game['logo_path'] ?? null;
-                                            $imgSrc = $path
-                                                ?? 'https://r2.ctis256.sezertetik.dev/' . $game['file_path']
-                                            ?>
-                                            <img
-                                                src="<?= htmlspecialchars($imgSrc) ?>"
-                                                alt="<?= htmlspecialchars($game['name'] ?? 'Game') ?>"
-                                                class="game-thumbnail">
-                                        </td>
+                                    <td>
+                                        <?php
+                                        $path = $game['logo_path'] ?? null;
+                                        $imgSrc = $path
+                                            ?? 'https://r2.ctis256.sezertetik.dev/' . $game['file_path'];
+                                        ?>
+                                        <img src="<?= $imgSrc ?>" alt="<?= $game['name'] ?>" class="game-thumbnail">
+                                    </td>
                                     <td style="color: #ffffff;"><?= $game['name'] ?></td>
-                                    <td><?=  $game['username'] ?></td>
-                                    <td><?=  $game['genre'] ?></td>
+                                    <td><?= $game['username'] ?></td>
+                                    <td><?= $game['genre'] ?></td>
                                     <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
                                     <td>
-                                        <?php if (isset($game['is_approved'])&&$game['is_approved']==1): ?>
+                                        <?php if (isset($game['is_approved']) && $game['is_approved'] == 1): ?>
                                             <span class="badge badge-success">Active</span>
-                                        <?php elseif (isset($game['is_approved'])&&$game['is_approved']==0) : ?>
+                                        <?php elseif (isset($game['is_approved']) && $game['is_approved'] == 0) : ?>
                                             <span class="badge badge-warning">Pending</span>
-                                        <?php elseif(isset($game['is_approved'])&&$game['is_approved']==-1) : ?>
+                                        <?php elseif (isset($game['is_approved']) && $game['is_approved'] == -1) : ?>
                                             <span class="badge badge-danger">Rejected</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                            <button class="btn-action btn-edit"
-                                                data-game-id="<?php echo $game['id']; ?>"
-                                                data-game-name="<?php echo htmlspecialchars($game['name']); ?>"
-                                                data-game-genre="<?php echo htmlspecialchars($game['genre']); ?>"
-                                                data-game-description="<?php echo htmlspecialchars($game['description']); ?>"
-                                                data-game-price="<?php echo $game['price']; ?>">
-                                                <i class="fa-solid fa-pen"></i> Edit
-                                            </button>
-                                            <button class="btn-action btn-delete" id="gameDelete" data-game-id="<?php echo $game['id']; ?>" data-game-name="<?php echo htmlspecialchars($game['name']); ?>"><i class="fa-solid fa-trash"></i> Delete</button>
-                                        </td>
+                                        <button class="btn-action btn-edit"
+                                            data-game-id="<?php echo $game['id']; ?>"
+                                            data-game-name="<?php echo htmlspecialchars($game['name']); ?>"
+                                            data-game-genre="<?php echo htmlspecialchars($game['genre']); ?>"
+                                            data-game-description="<?php echo htmlspecialchars($game['description']); ?>"
+                                            data-game-price="<?php echo $game['price']; ?>">
+                                            <i class="fa-solid fa-pen"></i> Edit
+                                        </button>
+                                        <button class="btn-action btn-delete" id="gameDelete" data-game-id="<?php echo $game['id']; ?>" data-game-name="<?php echo htmlspecialchars($game['name']); ?>"><i class="fa-solid fa-trash"></i> Delete</button>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -364,7 +396,7 @@
             <?php endif; ?>
         </main>
     </div>
-      <!-- Edit Game Modal -->
+    <!-- Edit Game Modal -->
     <div class="modal fade" id="editGameModal" tabindex="-1" aria-labelledby="editGameModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content" style="background: #1a1a1a; color: #ffffff;">
@@ -437,15 +469,13 @@
     </script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
-        
-       
-        document.addEventListener('click', function (e) {
-            if (e.target.classList.contains('btn-view')) {
-                    e.preventDefault();
-                    window.location.href = 'admin.php?section=all-games';
-            }
-        });
-       
+        // document.addEventListener('click', function(e) {
+        //     if (e.target.classList.contains('btn-view')) {
+        //         e.preventDefault();
+        //         window.location.href = 'admin.php?section=all-games';
+        //     }
+        // });
+
         document.querySelectorAll('.btn-approve').forEach(btn => {
             btn.addEventListener('click', async function() {
                 if (confirm('Approve this game for publication?')) {
@@ -511,120 +541,140 @@
                 }
             });
         });
-        document.addEventListener('click', async function (e) {
-        if (e.target.id === 'btnDeveloperDel') {
-        e.preventDefault();
-
-        const developerId = e.target.dataset.developerId;
-        if (!developerId) {
-            alert('Developer ID missing');
-            return;
-        }
-
-        if (!confirm('Are you sure you want to delete this developer? This action cannot be undone.')) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`../api/admin/developer/${developerId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin'
-            });
-
-            const result = await response.json();
-
-            if (!response.ok || result.success === false) {
-                alert(result.message || 'Delete failed');
-                return;
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-view') || e.target.closest('.btn-view')) {
+                e.preventDefault();
+                const button = e.target.classList.contains('btn-view') ? e.target : e.target.closest('.btn-view');
+                const developerId = button.getAttribute('data-developer-id');
+                window.location.href = `admin.php?section=all-games&developer=${developerId}`;
             }
+        });
 
-            alert('Developer deleted successfully');
-
-        } catch (error) {
-            console.error(error);
-            alert('Network error occurred');
-        }
-    }
-    });
-    document.addEventListener('click', async function (e) {
-     if (e.target.id === 'btnDeveloperDeactivate') {
-        e.preventDefault();
-
-        const developerId = e.target.dataset.developerId;
-        if (!developerId) {
-            alert('Developer ID not found');
-            return;
-        }
-
-        if (!confirm('Are you sure you want to deactivate this developer?')) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`../api/admin/developer/${developerId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin'
+        // Handle developer filter change in all-games section
+        const developerFilter = document.getElementById('developer-filter');
+        if (developerFilter) {
+            developerFilter.addEventListener('change', function() {
+                const developerId = this.value;
+                if (developerId) {
+                    window.location.href = `admin.php?section=all-games&developer=${developerId}`;
+                } else {
+                    window.location.href = 'admin.php?section=all-games';
+                }
             });
+        }
+        document.addEventListener('click', async function(e) {
+            if (e.target.id === 'btnDeveloperDel') {
+                e.preventDefault();
 
-            const result = await response.json();
+                const developerId = e.target.dataset.developerId;
+                if (!developerId) {
+                    alert('Developer ID missing');
+                    return;
+                }
 
-            if (!response.ok || result.success === false) {
-                alert(result.message || 'Deactivate failed');
-                return;
+                if (!confirm('Are you sure you want to delete this developer? This action cannot be undone.')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`../api/admin/developer/${developerId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || result.success === false) {
+                        alert(result.message || 'Delete failed');
+                        return;
+                    }
+
+                    alert('Developer deleted successfully');
+
+                } catch (error) {
+                    console.error(error);
+                    alert('Network error occurred');
+                }
             }
+        });
+        document.addEventListener('click', async function(e) {
+            if (e.target.id === 'btnDeveloperDeactivate') {
+                e.preventDefault();
 
-            alert('Developer deactivated successfully');
+                const developerId = e.target.dataset.developerId;
+                if (!developerId) {
+                    alert('Developer ID not found');
+                    return;
+                }
 
-        } catch (error) {
-            console.error(error);
-            alert('Network error');
-        }
-    }
-    else if (e.target.id === 'btnDeveloperActivate') {
-        e.preventDefault();
+                if (!confirm('Are you sure you want to deactivate this developer?')) {
+                    return;
+                }
 
-        const developerId = e.target.dataset.developerId;
-        if (!developerId) {
-            alert('Developer ID not found');
-            return;
-        }
+                try {
+                    const response = await fetch(`../api/admin/developer/${developerId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    });
 
-        if (!confirm('Are you sure you want to activate this developer?')) {
-            return;
-        }
+                    const result = await response.json();
 
-        try {
-            const response = await fetch(`../api/admin/developer/${developerId}/activate`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin'
-            });
+                    if (!response.ok || result.success === false) {
+                        alert(result.message || 'Deactivate failed');
+                        return;
+                    }
 
-            const result = await response.json();
+                    alert('Developer deactivated successfully');
 
-            if (!response.ok || result.success === false) {
-                alert(result.message || 'Activation failed');
-                return;
+                } catch (error) {
+                    console.error(error);
+                    alert('Network error');
+                }
+            } else if (e.target.id === 'btnDeveloperActivate') {
+                e.preventDefault();
+
+                const developerId = e.target.dataset.developerId;
+                if (!developerId) {
+                    alert('Developer ID not found');
+                    return;
+                }
+
+                if (!confirm('Are you sure you want to activate this developer?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`../api/admin/developer/${developerId}/activate`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || result.success === false) {
+                        alert(result.message || 'Activation failed');
+                        return;
+                    }
+
+                    alert('Developer activated successfully');
+
+                } catch (error) {
+                    console.error(error);
+                    alert('Network error');
+                }
             }
+        });
 
-            alert('Developer activated successfully');
-
-        } catch (error) {
-            console.error(error);
-            alert('Network error');
-        }
-    }
-});
- 
- document.querySelectorAll('#gameDelete').forEach(btn => {
+        document.querySelectorAll('#gameDelete').forEach(btn => {
             btn.addEventListener('click', function() {
                 const gameId = this.getAttribute('data-game-id');
                 const gameName = this.getAttribute('data-game-name');
@@ -678,7 +728,7 @@
                 }
             });
         });
-         document.querySelectorAll('.btn-edit').forEach(btn => {
+        document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', function() {
                 const gameId = this.getAttribute('data-game-id');
                 const gameName = this.getAttribute('data-game-name');
@@ -697,9 +747,9 @@
                 const editModal = new bootstrap.Modal(document.getElementById('editGameModal'));
                 editModal.show();
             });
-           
+
         });
-         $('#saveGameChanges').on('click', function() {
+        $('#saveGameChanges').on('click', function() {
             const gameId = $('#editGameId').val();
             const gameData = {
                 name: $('#editGameName').val(),
@@ -754,8 +804,7 @@
                     saveBtn.html(originalBtnHtml);
                 }
             });
-            });
-
+        });
     </script>
 </body>
 
