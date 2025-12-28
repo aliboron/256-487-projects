@@ -5,7 +5,7 @@ require_once __DIR__ . '/../api/db.php';
 
 $stmt = $db->prepare("select * from games");
 $stmt->execute();
-$games = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
+$games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 <?php $activePage = 'store'; ?>
@@ -63,6 +63,19 @@ $games = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN user
                 $featuredGames = $games;
                 shuffle($featuredGames);
                 $featuredGames = array_slice($featuredGames, 0, 4);
+                while (true) {
+                    $allBanner = true;
+                    foreach($featuredGames as $game){
+                        $allBanner = str_contains($game["file_name"], "banner") && $allBanner;
+                    }
+                    if (!$allBanner){
+                        $featuredGames = $games;
+                        shuffle($featuredGames);
+                        $featuredGames = array_slice($featuredGames, 0, 4);
+                    }else {
+                        break;
+                    }
+                }
                 ?>
 
                 <?php if (!empty($featuredGames)): ?>

@@ -196,7 +196,6 @@ class CheckoutController
             : new ApiResponse(false, null, 'Checkout not found');
     }
 
-
     // UNDER CONSTRUCTION !!!!!!!!!!!!!!
     // /**
     //  * GET /games/search/{query} - Search games by name
@@ -238,7 +237,7 @@ class CheckoutController
 
 
     /**
-     * DELETE /games/{id} - Delete a game
+     * DELETE /checkouts/{id} - Delete a game
      */
     #[Route('/checkouts/{id}', 'DELETE')]
     public function deleteCheckout(string $id): ApiResponse
