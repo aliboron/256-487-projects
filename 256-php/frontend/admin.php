@@ -1,8 +1,8 @@
 <?php
-require_once __DIR__ . '/../api/db.php';
-$allGames = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
-$approvedGames = $db->query(" SELECT * FROM games g JOIN users u WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-$developers = $db->query("
+    require_once __DIR__ . '/../api/db.php';
+   $allGames = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
+    $approvedGames=$db->query(" SELECT * FROM games g JOIN users u WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+   $developers = $db->query("
          SELECT u.*, COUNT(g.id) AS game_count
     FROM users u
     LEFT JOIN games g ON g.developer_id = u.id
@@ -10,9 +10,9 @@ $developers = $db->query("
      AND u.type = 'game_developer'
     GROUP BY u.id
     ")->fetchAll(PDO::FETCH_ASSOC);
-$developersGame = $db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
-$pendingGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-$activeSection = $_GET["section"] ?? "dashboard";
+    $developersGame=$db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
+    $pendingGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+    $activeSection=$_GET["section"]??"dashboard";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -143,7 +143,6 @@ $activeSection = $_GET["section"] ?? "dashboard";
                             <tbody>
                                 <?php foreach ($pendingGames as $game): ?>
                                     <tr>
-
                                         <td>
                                             <?php
                                             $path = $game['logo_path'] ?? null;
@@ -315,6 +314,8 @@ $activeSection = $_GET["section"] ?? "dashboard";
                                             <span class="badge badge-success">Active</span>
                                         <?php elseif (isset($game['is_approved']) && $game['is_approved'] == 0) : ?>
                                             <span class="badge badge-warning">Pending</span>
+                                        <?php elseif(isset($game['is_approved'])&&$game['is_approved']==-1) : ?>
+                                            <span class="badge badge-danger">Rejected</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
@@ -353,6 +354,83 @@ $activeSection = $_GET["section"] ?? "dashboard";
         });
 
         // Handle approve/reject actions
+        document.querySelectorAll('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                if (confirm('Approve this game for publication?')) {
+                    const gameId = this.getAttribute('data-game-id');
+                    const row = this.closest('tr');
+
+                    try {
+                        const response = await fetch(`../api/admin/games/${gameId}/approve`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            row.style.backgroundColor = '#1b4d1b';
+                            setTimeout(() => {
+                                row.remove();
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            alert('Failed to approve game: ' + (data.message || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('Error approving game:', error);
+                        alert('An error occurred while approving the game.');
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                if (confirm('Reject this game? The developer will be notified.')) {
+                    const gameId = this.getAttribute('data-game-id');
+                    const row = this.closest('tr');
+
+                    try {
+                        const response = await fetch(`../api/admin/games/${gameId}/reject`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            row.style.backgroundColor = '#4d1b1b';
+                            setTimeout(() => {
+                                row.remove();
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            alert('Failed to reject game: ' + (data.message || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('Error rejecting game:', error);
+                        alert('An error occurred while rejecting the game.');
+                    }
+                }
+            });
+        });
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-view')) {
+                    e.preventDefault();
+                    window.location.href = 'admin.php?section=all-games';
+            }
+        });
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-deactivate')) {
+             e.preventDefault();
+                window.location.href = 'admin.php?section=all-games';
+             }
+        });
         document.querySelectorAll('.btn-approve').forEach(btn => {
             btn.addEventListener('click', async function() {
                 if (confirm('Approve this game for publication?')) {
