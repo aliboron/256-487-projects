@@ -1,67 +1,18 @@
 <?php
-// Sample data - will be replaced with API calls later
-$pendingGames = [
-    [
-        'id' => 101,
-        'name' => 'Cyber Quest 2077',
-        'developer' => 'TechStudio',
-        'logo_path' => 'https://via.placeholder.com/60x80/2a2a2a/ffffff?text=CQ',
-        'genre' => 'RPG',
-        'price' => 49.99,
-        'submitted_date' => '2025-12-20'
-    ],
-    [
-        'id' => 102,
-        'name' => 'Space Raiders',
-        'developer' => 'GalaxyGames',
-        'logo_path' => 'https://via.placeholder.com/60x80/2a2a2a/ffffff?text=SR',
-        'genre' => 'Shooter',
-        'price' => 29.99,
-        'submitted_date' => '2025-12-22'
-    ]
-];
-
-$approvedGames = [
-    [
-        'id' => 1,
-        'name' => 'The Last of Us Part II',
-        'developer' => 'Naughty Dog',
-        'logo_path' => 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg',
-        'genre' => 'Action',
-        'price' => 59.99,
-        'status' => 'active'
-    ],
-    [
-        'id' => 2,
-        'name' => 'God of War',
-        'developer' => 'Santa Monica Studio',
-        'logo_path' => 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg',
-        'genre' => 'Action',
-        'price' => 49.99,
-        'status' => 'active'
-    ]
-];
-
-$developers = [
-    [
-        'id' => 1,
-        'username' => 'TechStudio',
-        'email' => 'contact@techstudio.com',
-        'games_count' => 5,
-        'status' => 'active',
-        'joined_date' => '2024-01-15'
-    ],
-    [
-        'id' => 2,
-        'username' => 'GalaxyGames',
-        'email' => 'info@galaxygames.com',
-        'games_count' => 3,
-        'status' => 'active',
-        'joined_date' => '2024-03-20'
-    ]
-];
-
-$activeSection = $_GET['section'] ?? 'dashboard';
+    require_once __DIR__ . '/../api/db.php';
+    $allGames=$db->query("SELECT * FROM games  g JOIN users u WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
+    $approvedGames=$db->query(" SELECT * FROM games g JOIN users u WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+   $developers = $db->query("
+         SELECT u.*, COUNT(g.id) AS game_count
+    FROM users u
+    LEFT JOIN games g ON g.developer_id = u.id
+     WHERE u.is_verified = 1
+     AND u.type = 'game_developer'
+    GROUP BY u.id
+    ")->fetchAll(PDO::FETCH_ASSOC);
+    $developersGame=$db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
+    $pendingGames=$db->query(" SELECT * FROM games g JOIN users u WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+    $activeSection=$_GET["section"]??"dashboard";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -192,12 +143,12 @@ $activeSection = $_GET['section'] ?? 'dashboard';
                             <tbody>
                                 <?php foreach ($pendingGames as $game): ?>
                                     <tr>
-                                        <td><img src="<?php echo htmlspecialchars($game['logo_path']); ?>" alt="<?php echo htmlspecialchars($game['name']); ?>" class="game-thumbnail"></td>
-                                        <td style="color: #ffffff;"><?php echo htmlspecialchars($game['name']); ?></td>
-                                        <td><?php echo htmlspecialchars($game['developer']); ?></td>
-                                        <td><?php echo htmlspecialchars($game['genre']); ?></td>
-                                        <td style="color: #4CAF50;">$<?php echo number_format($game['price'], 2); ?></td>
-                                        <td><?php echo date('M d, Y', strtotime($game['submitted_date'])); ?></td>
+                                        <td><img src="<?= $game['logo_path'] ?>" alt="<?=  $game['name'] ?>" class="game-thumbnail"></td>
+                                        <td style="color: #ffffff;"><?= $game['name'] ?></td>
+                                        <td><?=  $game['username'] ?></td>
+                                        <td><?=   $game['genre'] ?></td>
+                                        <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
+                                        <td><?=  $game['created_at'] ?></td>
                                         <td>
                                             <button class="btn-action btn-approve"><i class="fa-solid fa-check"></i> Approve</button>
                                             <button class="btn-action btn-reject"><i class="fa-solid fa-times"></i> Reject</button>
@@ -240,12 +191,16 @@ $activeSection = $_GET['section'] ?? 'dashboard';
                             <tbody>
                                 <?php foreach ($approvedGames as $game): ?>
                                     <tr>
-                                        <td><img src="<?php echo htmlspecialchars($game['logo_path']); ?>" alt="<?php echo htmlspecialchars($game['name']); ?>" class="game-thumbnail"></td>
-                                        <td style="color: #ffffff;"><?php echo htmlspecialchars($game['name']); ?></td>
-                                        <td><?php echo htmlspecialchars($game['developer']); ?></td>
-                                        <td><?php echo htmlspecialchars($game['genre']); ?></td>
-                                        <td style="color: #4CAF50;">$<?php echo number_format($game['price'], 2); ?></td>
-                                        <td><span class="badge badge-success"><?php echo ucfirst($game['status']); ?></span></td>
+                                        <td><img src="<?=  $game['logo_path'] ?>" alt="<?= $game['name'] ?>" class="game-thumbnail"></td>
+                                        <td style="color: #ffffff;"><?=  $game['name'] ?></td>
+                                        <td><?= $game['username'] ?></td>
+                                        <td><?=  $game['genre'] ?></td>
+                                        <td style="color: #4CAF50;">$<?=  $game['price'] ?></td>
+                                        <td>
+                                        <?php if (isset($game['is_approved'])&&$game['is_approved']==1): ?>
+                                            <span class="badge badge-success">Active</span>
+                                        <?php endif; ?>
+                                        </td>
                                         <td>
                                             <button class="btn-action btn-edit"><i class="fa-solid fa-pen"></i> Edit</button>
                                             <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
@@ -287,11 +242,15 @@ $activeSection = $_GET['section'] ?? 'dashboard';
                             <tbody>
                                 <?php foreach ($developers as $dev): ?>
                                     <tr>
-                                        <td style="color: #ffffff;"><i class="fa-solid fa-user"></i> <?php echo htmlspecialchars($dev['username']); ?></td>
-                                        <td><?php echo htmlspecialchars($dev['email']); ?></td>
-                                        <td><?php echo $dev['games_count']; ?> games</td>
-                                        <td><span class="badge badge-success"><?php echo ucfirst($dev['status']); ?></span></td>
-                                        <td><?php echo date('M d, Y', strtotime($dev['joined_date'])); ?></td>
+                                        <td style="color: #ffffff;"><i class="fa-solid fa-user"></i> <?= $dev['username'] ?></td>
+                                        <td><?=   $dev['email'] ?></td>
+                                        <td><?=    $dev['game_count'] ?> games</td>
+                                        <td>
+                                        <?php if (isset($dev['is_verified'])&&$dev['is_verified']==1): ?>
+                                            <span class="badge badge-success">Active</span>
+                                        <?php endif; ?>
+                                        </td>
+                                        <td><?=   $dev['registered_at'] ?></td>
                                         <td>
                                             <button class="btn-action btn-view"><i class="fa-solid fa-eye"></i> View Games</button>
                                             <button class="btn-action btn-deactivate"><i class="fa-solid fa-ban"></i> Deactivate</button>
@@ -326,17 +285,17 @@ $activeSection = $_GET['section'] ?? 'dashboard';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach (array_merge($approvedGames, $pendingGames) as $game): ?>
+                            <?php foreach ($allGames as $game): ?>
                                 <tr>
-                                    <td><img src="<?php echo htmlspecialchars($game['logo_path']); ?>" alt="<?php echo htmlspecialchars($game['name']); ?>" class="game-thumbnail"></td>
-                                    <td style="color: #ffffff;"><?php echo htmlspecialchars($game['name']); ?></td>
-                                    <td><?php echo htmlspecialchars($game['developer']); ?></td>
-                                    <td><?php echo htmlspecialchars($game['genre']); ?></td>
-                                    <td style="color: #4CAF50;">$<?php echo number_format($game['price'], 2); ?></td>
+                                    <td><img src="<?=  $game['logo_path'] ?>" alt="<?=  $game['name'] ?>" class="game-thumbnail"></td>
+                                    <td style="color: #ffffff;"><?= $game['name'] ?></td>
+                                    <td><?=  $game['username'] ?></td>
+                                    <td><?=  $game['genre'] ?></td>
+                                    <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
                                     <td>
-                                        <?php if (isset($game['status'])): ?>
-                                            <span class="badge badge-success"><?php echo ucfirst($game['status']); ?></span>
-                                        <?php else: ?>
+                                        <?php if (isset($game['is_approved'])&&$game['is_approved']==1): ?>
+                                            <span class="badge badge-success">Active</span>
+                                        <?php elseif (isset($game['is_approved'])&&$game['is_approved']==0) : ?>
                                             <span class="badge badge-warning">Pending</span>
                                         <?php endif; ?>
                                     </td>
