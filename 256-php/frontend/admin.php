@@ -1,18 +1,28 @@
 <?php
-    require_once __DIR__ . '/../api/db.php';
-   $allGames = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
-    $approvedGames=$db->query(" SELECT * FROM games g JOIN users u WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-   $developers = $db->query("
+require_once __DIR__ . '/../api/db.php';
+
+// Get developer filter if set
+$developerFilter = $_GET['developer'] ?? null;
+
+// Build the query with optional developer filter
+if ($developerFilter) {
+    $stmt = $db->prepare("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id AND g.developer_id = :developer_id");
+    $stmt->execute(['developer_id' => $developerFilter]);
+    $allGames = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $allGames = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
+}
+$approvedGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$developers = $db->query("
          SELECT u.*, COUNT(g.id) AS game_count
     FROM users u
     LEFT JOIN games g ON g.developer_id = u.id
-     WHERE u.is_verified = 1
-     AND u.type = 'game_developer'
+     WHERE u.type = 'game_developer'
     GROUP BY u.id
     ")->fetchAll(PDO::FETCH_ASSOC);
-    $developersGame=$db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
-    $pendingGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-    $activeSection=$_GET["section"]??"dashboard";
+$developersGame = $db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
+$pendingGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$activeSection = $_GET["section"] ?? "dashboard";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -262,7 +272,7 @@
                                         </td>
                                         <td><?= $dev['registered_at'] ?></td>
                                         <td>
-                                            <button class="btn-action btn-view"><i class="fa-solid fa-eye"></i> View Games</button>
+                                            <button class="btn-action btn-view" data-developer-id="<?= $dev['id'] ?>"><i class="fa-solid fa-eye"></i> View Games</button>
                                             <button class="btn-action btn-deactivate"><i class="fa-solid fa-ban"></i> Deactivate</button>
                                             <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
                                         </td>
@@ -279,6 +289,19 @@
                 <div class="admin-header">
                     <h1>All Games</h1>
                     <p>View and manage all games in the system.</p>
+                    <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+                        <label for="developer-filter" style="color: #ffffff; font-weight: 500;">
+                            <i class="fa-solid fa-filter"></i> Filter by Developer:
+                        </label>
+                        <select id="developer-filter" class="form-select" style="width: 300px; background-color: #2a2a2a; color: #ffffff; border: 1px solid #444; border-radius: 8px; padding: 8px 12px;">
+                            <option value="">All Developers</option>
+                            <?php foreach ($developers as $dev): ?>
+                                <option value="<?= $dev['id'] ?>" <?= $developerFilter == $dev['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($dev['username']) ?> (<?= $dev['game_count'] ?> games)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="section-card">
@@ -314,7 +337,7 @@
                                             <span class="badge badge-success">Active</span>
                                         <?php elseif (isset($game['is_approved']) && $game['is_approved'] == 0) : ?>
                                             <span class="badge badge-warning">Pending</span>
-                                        <?php elseif(isset($game['is_approved'])&&$game['is_approved']==-1) : ?>
+                                        <?php elseif (isset($game['is_approved']) && $game['is_approved'] == -1) : ?>
                                             <span class="badge badge-danger">Rejected</span>
                                         <?php endif; ?>
                                     </td>
@@ -419,83 +442,33 @@
                 }
             });
         });
-        document.addEventListener('click', function (e) {
-            if (e.target.classList.contains('btn-view')) {
-                    e.preventDefault();
-                    window.location.href = 'admin.php?section=all-games';
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-view') || e.target.closest('.btn-view')) {
+                e.preventDefault();
+                const button = e.target.classList.contains('btn-view') ? e.target : e.target.closest('.btn-view');
+                const developerId = button.getAttribute('data-developer-id');
+                window.location.href = `admin.php?section=all-games&developer=${developerId}`;
             }
         });
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             if (e.target.classList.contains('btn-deactivate')) {
-             e.preventDefault();
+                e.preventDefault();
                 window.location.href = 'admin.php?section=all-games';
-             }
+            }
         });
-        document.querySelectorAll('.btn-approve').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                if (confirm('Approve this game for publication?')) {
-                    const gameId = this.getAttribute('data-game-id');
-                    const row = this.closest('tr');
 
-                    try {
-                        const response = await fetch(`../api/admin/games/${gameId}/approve`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            row.style.backgroundColor = '#1b4d1b';
-                            setTimeout(() => {
-                                row.remove();
-                                location.reload();
-                            }, 1000);
-                        } else {
-                            alert('Failed to approve game: ' + (data.message || 'Unknown error'));
-                        }
-                    } catch (error) {
-                        console.error('Error approving game:', error);
-                        alert('An error occurred while approving the game.');
-                    }
+        // Handle developer filter change in all-games section
+        const developerFilter = document.getElementById('developer-filter');
+        if (developerFilter) {
+            developerFilter.addEventListener('change', function() {
+                const developerId = this.value;
+                if (developerId) {
+                    window.location.href = `admin.php?section=all-games&developer=${developerId}`;
+                } else {
+                    window.location.href = 'admin.php?section=all-games';
                 }
             });
-        });
-
-        document.querySelectorAll('.btn-reject').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                if (confirm('Reject this game? The developer will be notified.')) {
-                    const gameId = this.getAttribute('data-game-id');
-                    const row = this.closest('tr');
-
-                    try {
-                        const response = await fetch(`../api/admin/games/${gameId}/reject`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            row.style.backgroundColor = '#4d1b1b';
-                            setTimeout(() => {
-                                row.remove();
-                                location.reload();
-                            }, 1000);
-                        } else {
-                            alert('Failed to reject game: ' + (data.message || 'Unknown error'));
-                        }
-                    } catch (error) {
-                        console.error('Error rejecting game:', error);
-                        alert('An error occurred while rejecting the game.');
-                    }
-                }
-            });
-        });
+        }
     </script>
 </body>
 
