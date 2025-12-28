@@ -139,6 +139,30 @@ class LoginController
         return new ApiResponse(true, null, "Logout successfull");
     }
 
+    #[Route("/auth/me", "GET")]
+    /* ================= GET CURRENT USER ================= */
+    public function getCurrentUser()
+    {
+        ensureSession();
+        
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
+            http_response_code(401);
+            return new ApiResponse(false, null, "Not authenticated");
+        }
+
+        // Fetch fresh user data from database
+        $stmt = $this->db->prepare("SELECT id, username, email, type, is_verified FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            http_response_code(401);
+            return new ApiResponse(false, null, "User not found");
+        }
+
+        return new ApiResponse(true, $user, "User retrieved successfully");
+    }
+
 
 
     /* ================= TOKEN ================= */

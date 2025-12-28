@@ -3,6 +3,7 @@
 require_once __DIR__ . '/UserController.php';
 require_once __DIR__ . '/../r2.php';
 
+#[Authorize('game_developer')]
 class GameDeveloperController
 {
     private UserRepository $userRepository;
@@ -47,15 +48,74 @@ class GameDeveloperController
         }
     }
 
-    #[Route('/developers/{developerId}/games', 'POST')]
-    public function createGameForDeveloper(Game $game): ApiResponse
+    #[Route('/developers/{developerId}/gamers', 'GET')]
+    public function getGamersForDeveloper(int $developerId): ApiResponse
     {
-        $isVerified = $this->isDeveloperVerified($game->developer_id);
+        $isVerified = $this->isDeveloperVerified($developerId);
+        if (!$isVerified) return new ApiResponse(false, null, "Developer is not verified, so that they cannot access gamers.");
+
+        try {
+            global $db;
+            $gamersQuery = "SELECT DISTINCT 
+                u.id,
+                u.username,
+                u.email,
+                g.name as game_purchased,
+                c.date as purchase_date,
+                c.payment_total as price_paid
+                FROM checkouts c
+                JOIN users u ON c.user_id = u.id
+                JOIN games g ON c.game_id = g.id
+                WHERE g.developer_id = ?
+                ORDER BY c.date DESC";
+            
+            $stmt = $db->prepare($gamersQuery);
+            $stmt->execute([$developerId]);
+            $gamers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return new ApiResponse(true, $gamers);
+        } catch (Exception $e) {
+            return new ApiResponse(false, null, "Error retrieving gamers: " . $e->getMessage());
+        }
+    }
+
+    #[Route('/developers/{developerId}/games', 'POST')]
+    public function createGameForDeveloper(int $developerId): ApiResponse
+    {
+        // Get from the body
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        // Validate required fields
+        $required = ['name', 'description', 'price', 'genre', 'developer_id'];
+        foreach ($required as $field) {
+            if (!isset($input[$field]) || $input[$field] === '') {
+                return new ApiResponse(false, null, "Field '$field' is required");
+            }
+        }
+
+        // Verify the developer ID matches
+        if ((int)$input['developer_id'] !== $developerId) {
+            return new ApiResponse(false, null, "Developer ID mismatch.");
+        }
+
+        $isVerified = $this->isDeveloperVerified($developerId);
         if (!$isVerified) return new ApiResponse(false, null, "Developer is not verified, so that they cannot create games.");
 
         try {
+            // Create Game object from input
+            $game = new Game(
+                id: null,
+                name: $input['name'],
+                description: $input['description'],
+                price: (float)$input['price'],
+                is_approved: (int)($input['is_approved'] ?? 0), // Default to pending
+                logo_path: $input['logo_path'] ?? null,
+                developer_id: $developerId,
+                genre: $input['genre']
+            );
+
             $newGame = $this->gameRepository->createGame($game);
-            return new ApiResponse(true, $newGame);
+            return new ApiResponse(true, $newGame->toArray(), "Game created successfully.");
         } catch (Exception $e) {
             return new ApiResponse(false, null, "Error creating game: " . $e->getMessage());
         }
