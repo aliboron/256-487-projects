@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../api/db.php';
-
 session_start();
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
@@ -9,15 +7,22 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
     exit;
 }
 
+if ($_SESSION['user_data']['type'] !== 'user' && $_SESSION['user_data']['type'] !== 'admin' && $_SESSION['user_data']['type'] !== 'game_developer') {
+    header('Location: index.php');
+    exit;
+}
+
+require_once __DIR__ . '/../api/db.php';
+
 $userId = $_SESSION['user_id'];
-$featuredGames=[];
+$featuredGames = [];
 
 //Dummy userId
 //$userId = 35;
 //var_dump($userId);
 
-$stmt = $db->prepare("select * from games") ;
-$stmt->execute() ;
+$stmt = $db->prepare("select * from games");
+$stmt->execute();
 $allGames = $stmt->fetchAll(PDO::FETCH_ASSOC);
 //var_dump($allGames);
 
@@ -26,15 +31,15 @@ $stmtCheckouts->execute([$userId]);
 $userCheckouts = $stmtCheckouts->fetchAll(PDO::FETCH_ASSOC);
 //var_dump($userCheckouts);
 
-$libraryGames=[];
+$libraryGames = [];
 
-foreach($userCheckouts as $checkout){
-    foreach($allGames as $game){
-        if($game['id']===$checkout['game_id']){
-            $game["purchase_date"] = $checkout["date"];//satın alma tarihini objeyler birleştir    
-            $game["checkout_id"]=$checkout["id"];      
-            if(!in_array($game["id"], array_column($libraryGames, "id"))){//listeyi unique olması için filtrele
-                $game["playtime"] = rand(0,162);//objeye rastgele oynanma süresi ekle
+foreach ($userCheckouts as $checkout) {
+    foreach ($allGames as $game) {
+        if ($game['id'] === $checkout['game_id']) {
+            $game["purchase_date"] = $checkout["date"]; //satın alma tarihini objeyler birleştir    
+            $game["checkout_id"] = $checkout["id"];
+            if (!in_array($game["id"], array_column($libraryGames, "id"))) { //listeyi unique olması için filtrele
+                $game["playtime"] = rand(0, 162); //objeye rastgele oynanma süresi ekle
                 array_push($libraryGames, $game);
             }
         }
