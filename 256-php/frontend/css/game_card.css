@@ -138,6 +138,7 @@
     color: #ffffff;
     border: 1px solid #4caf50;
     padding: 0.6rem 1rem;
+    margin: 0 0.5rem;
     border-radius: 4px;
     font-size: 0.9rem;
     font-weight: 600;
@@ -147,9 +148,31 @@
     text-align: center;
 }
 
+.btn-return {
+    background-color: #e22020;
+    color: #ffffff;
+    border: 1px solid #e22020;
+    padding: 0.6rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.8s;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+
 .btn-play:hover {
     background-color: #45a049;
     border-color: #45a049;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.btn-return:hover {
+    background-color: #4a0100;
+    border-color: #e22020;
     color: #ffffff;
     text-decoration: none;
 }

@@ -1,64 +1,51 @@
 <?php
-// Sample library data - will be replaced with API call later
-$libraryGames = [
-    [
-        "id" => 30,
-        "name" => "Super Smash Bros. Melee",
-        "description" => "Super Smash Bros. Melee includes all playable characters from the first game and adds characters from franchises such as Fire Emblem. Its major focus is the multiplayer mode.",
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co21yv.jpg",
-        "genre" => "Fighting",
-        "purchase_date" => "2025-12-15",
-        "playtime" => rand(5, 150) . " hours"
-    ],
-    [
-        "id" => 28,
-        "name" => "The Legend of Zelda: Breath of the Wild",
-        "description" => "The Legend of Zelda: Breath of the Wild is the first 3D open-world game in the Zelda series. Link can travel anywhere and be equipped with weapons and armor found throughout the world.",
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co3p2d.jpg",
-        "genre" => "Adventure",
-        "purchase_date" => "2025-12-10",
-        "playtime" => rand(5, 150) . " hours"
-    ],
-    [
-        "id" => 25,
-        "name" => "Elden Ring",
-        "description" => "Elden Ring is an action RPG developed by FromSoftware. Players assume the role of a customisable character known as the Tarnished, who must explore the Lands Between and seek to become the Elden Lord.",
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg",
-        "genre" => "Role-playing (RPG)",
-        "purchase_date" => "2025-12-05",
-        "playtime" => rand(5, 150) . " hours"
-    ],
-    [
-        "id" => 37,
-        "name" => "Red Dead Redemption 2",
-        "description" => "Red Dead Redemption 2 is the epic tale of outlaw Arthur Morgan and the infamous Van der Linde gang, on the run across America at the dawn of the modern age.",
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co1q1f.jpg",
-        "genre" => "Shooter",
-        "purchase_date" => "2025-11-28",
-        "playtime" => rand(5, 150) . " hours"
-    ],
-    [
-        "id" => 33,
-        "name" => "Persona 5 Royal",
-        "description" => "An enhanced version of Persona 5 with some new characters and a third semester added to the game. Released Internationally in 2020.",
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/coateg.jpg",
-        "genre" => "Role-playing (RPG)",
-        "purchase_date" => "2025-11-20",
-        "playtime" => rand(5, 150) . " hours"
-    ],
-    [
-        "id" => 32,
-        "name" => "God of War",
-        "description" => "This game focuses on Norse mythology and follows an older and more seasoned Kratos and his son Atreus in the years since the third game.",
-        "logo_path" => "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tmu.jpg",
-        "genre" => "Role-playing (RPG)",
-        "purchase_date" => "2025-11-15",
-        "playtime" => rand(5, 150) . " hours"
-    ]
-];
+
+use function Aws\filter;
+
+require_once __DIR__ . '/../api/db.php';
+
+session_start();
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
+    header('Location: login.php?redirect=library');
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+//Dummy userId
+//$userId = 35;
+//var_dump($userId);
+
+$stmt = $db->prepare("select * from games") ;
+$stmt->execute() ;
+$allGames = $stmt->fetchAll(PDO::FETCH_ASSOC);
+//var_dump($allGames);
+
+$stmtCheckouts = $db->prepare("select * from checkouts where user_id = ?");
+$stmtCheckouts->execute([$userId]);
+$userCheckouts = $stmtCheckouts->fetchAll(PDO::FETCH_ASSOC);
+//var_dump($userCheckouts);
+
+$libraryGames=[];
+
+foreach($userCheckouts as $checkout){
+    foreach($allGames as $game){
+        if($game['id']===$checkout['game_id']){
+            $game["purchase_date"] = $checkout["date"];//satın alma tarihini objeyler birleştir    
+            $game["checkout_id"]=$checkout["id"];      
+            if(!in_array($game["id"], array_column($libraryGames, "id"))){//listeyi unique olması için filtrele
+                $game["playtime"] = rand(0,162);//objeye rastgele oynanma süresi ekle
+                array_push($libraryGames, $game);
+            }
+        }
+    }
+}
+//var_dump($libraryGames);
 
 // Calculate total hours played
 $totalHours = 0;
+
 foreach ($libraryGames as $game) {
     $totalHours += (int)filter_var($game['playtime'], FILTER_SANITIZE_NUMBER_INT);
 }
