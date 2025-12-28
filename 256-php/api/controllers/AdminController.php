@@ -83,20 +83,34 @@ class AdminController
         }
     }
 
-    #[Route('/admin/games/{gameid}', 'PATCH')]
-    public function approve(int $id): ?Game
+    #[Route('/admin/games/{gameid}/approve', 'PATCH')]
+    public function approve(int $gameid): ApiResponse
     {
+        $game = $this->game_repository->find($gameid);
+        if (!$game) {
+            return new ApiResponse(false, null, 'Game not found');
+        }
+
         $stmt = $this->db->prepare("UPDATE games SET is_approved = 1 WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $this->game_repository->find($id);
+        $stmt->execute(['id' => $gameid]);
+        $updatedGame = $this->game_repository->find($gameid);
+
+        return new ApiResponse(true, $updatedGame?->toArray(), 'Game approved successfully');
     }
 
-    #[Route('/admin/games/{gameid}', 'PATCH')]
-    public function reject(int $id): ?Game
+    #[Route('/admin/games/{gameid}/reject', 'PATCH')]
+    public function reject(int $gameid): ApiResponse
     {
-        $stmt = $this->db->prepare("UPDATE games SET is_approved = 0 WHERE id = :id");
-        $stmt->execute(['id' => $id]);
-        return $this->game_repository->find($id);
+        $game = $this->game_repository->find($gameid);
+        if (!$game) {
+            return new ApiResponse(false, null, 'Game not found');
+        }
+
+        $stmt = $this->db->prepare("UPDATE games SET is_approved = -1 WHERE id = :id");
+        $stmt->execute(['id' => $gameid]);
+        $updatedGame = $this->game_repository->find($gameid);
+
+        return new ApiResponse(true, $updatedGame?->toArray(), 'Game rejected successfully');
     }
 
     #[Route('/admin/games/{gameid}', 'DELETE')]

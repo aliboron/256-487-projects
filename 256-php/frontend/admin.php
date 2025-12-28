@@ -1,8 +1,8 @@
 <?php
-    require_once __DIR__ . '/../api/db.php';
-    $allGames=$db->query("SELECT * FROM games  g JOIN users u WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
-    $approvedGames=$db->query(" SELECT * FROM games g JOIN users u WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-   $developers = $db->query("
+require_once __DIR__ . '/../api/db.php';
+$allGames = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
+$approvedGames = $db->query(" SELECT * FROM games g JOIN users u WHERE u.id=g.developer_id AND is_approved = 1 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$developers = $db->query("
          SELECT u.*, COUNT(g.id) AS game_count
     FROM users u
     LEFT JOIN games g ON g.developer_id = u.id
@@ -10,9 +10,9 @@
      AND u.type = 'game_developer'
     GROUP BY u.id
     ")->fetchAll(PDO::FETCH_ASSOC);
-    $developersGame=$db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
-    $pendingGames=$db->query(" SELECT * FROM games g JOIN users u WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-    $activeSection=$_GET["section"]??"dashboard";
+$developersGame = $db->query("SELECT COUNT(*) as game_count FROM games g JOIN users u WHERE u.id=g.developer_id AND u.type = 'game_developer'")->fetchAll(PDO::FETCH_ASSOC);
+$pendingGames = $db->query(" SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id =g.developer_id AND is_approved = 0 ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$activeSection = $_GET["section"] ?? "dashboard";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -143,15 +143,26 @@
                             <tbody>
                                 <?php foreach ($pendingGames as $game): ?>
                                     <tr>
-                                        <td><img src="<?= $game['logo_path'] ?>" alt="<?=  $game['name'] ?>" class="game-thumbnail"></td>
-                                        <td style="color: #ffffff;"><?= $game['name'] ?></td>
-                                        <td><?=  $game['username'] ?></td>
-                                        <td><?=   $game['genre'] ?></td>
-                                        <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
-                                        <td><?=  $game['created_at'] ?></td>
+
                                         <td>
-                                            <button class="btn-action btn-approve"><i class="fa-solid fa-check"></i> Approve</button>
-                                            <button class="btn-action btn-reject"><i class="fa-solid fa-times"></i> Reject</button>
+                                            <?php
+                                            $path = $game['logo_path'] ?? null;
+                                            $imgSrc = $path
+                                                ?? 'https://r2.ctis256.sezertetik.dev/' . $game['file_path']
+                                            ?>
+                                            <img
+                                                src="<?= htmlspecialchars($imgSrc) ?>"
+                                                alt="<?= htmlspecialchars($game['name'] ?? 'Game') ?>"
+                                                class="game-thumbnail">
+                                        </td>
+                                        <td style="color: #ffffff;"><?= $game['name'] ?></td>
+                                        <td><?= $game['username'] ?></td>
+                                        <td><?= $game['genre'] ?></td>
+                                        <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
+                                        <td><?= $game['created_at'] ?></td>
+                                        <td>
+                                            <button class="btn-action btn-approve" data-game-id="<?= $game['id'] ?>"><i class="fa-solid fa-check"></i> Approve</button>
+                                            <button class="btn-action btn-reject" data-game-id="<?= $game['id'] ?>"><i class="fa-solid fa-times"></i> Reject</button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -191,15 +202,15 @@
                             <tbody>
                                 <?php foreach ($approvedGames as $game): ?>
                                     <tr>
-                                        <td><img src="<?=  $game['logo_path'] ?>" alt="<?= $game['name'] ?>" class="game-thumbnail"></td>
-                                        <td style="color: #ffffff;"><?=  $game['name'] ?></td>
+                                        <td><img src="<?= $game['logo_path'] ?>" alt="<?= $game['name'] ?>" class="game-thumbnail"></td>
+                                        <td style="color: #ffffff;"><?= $game['name'] ?></td>
                                         <td><?= $game['username'] ?></td>
-                                        <td><?=  $game['genre'] ?></td>
-                                        <td style="color: #4CAF50;">$<?=  $game['price'] ?></td>
+                                        <td><?= $game['genre'] ?></td>
+                                        <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
                                         <td>
-                                        <?php if (isset($game['is_approved'])&&$game['is_approved']==1): ?>
-                                            <span class="badge badge-success">Active</span>
-                                        <?php endif; ?>
+                                            <?php if (isset($game['is_approved']) && $game['is_approved'] == 1): ?>
+                                                <span class="badge badge-success">Active</span>
+                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <button class="btn-action btn-edit"><i class="fa-solid fa-pen"></i> Edit</button>
@@ -243,14 +254,14 @@
                                 <?php foreach ($developers as $dev): ?>
                                     <tr>
                                         <td style="color: #ffffff;"><i class="fa-solid fa-user"></i> <?= $dev['username'] ?></td>
-                                        <td><?=   $dev['email'] ?></td>
-                                        <td><?=    $dev['game_count'] ?> games</td>
+                                        <td><?= $dev['email'] ?></td>
+                                        <td><?= $dev['game_count'] ?> games</td>
                                         <td>
-                                        <?php if (isset($dev['is_verified'])&&$dev['is_verified']==1): ?>
-                                            <span class="badge badge-success">Active</span>
-                                        <?php endif; ?>
+                                            <?php if (isset($dev['is_verified']) && $dev['is_verified'] == 1): ?>
+                                                <span class="badge badge-success">Active</span>
+                                            <?php endif; ?>
                                         </td>
-                                        <td><?=   $dev['registered_at'] ?></td>
+                                        <td><?= $dev['registered_at'] ?></td>
                                         <td>
                                             <button class="btn-action btn-view"><i class="fa-solid fa-eye"></i> View Games</button>
                                             <button class="btn-action btn-deactivate"><i class="fa-solid fa-ban"></i> Deactivate</button>
@@ -287,15 +298,22 @@
                         <tbody>
                             <?php foreach ($allGames as $game): ?>
                                 <tr>
-                                    <td><img src="<?=  $game['logo_path'] ?>" alt="<?=  $game['name'] ?>" class="game-thumbnail"></td>
+                                    <td>
+                                        <?php
+                                        $path = $game['logo_path'] ?? null;
+                                        $imgSrc = $path
+                                            ?? 'https://r2.ctis256.sezertetik.dev/' . $game['file_path'];
+                                        ?>
+                                        <img src="<?= $imgSrc ?>" alt="<?= $game['name'] ?>" class="game-thumbnail">
+                                    </td>
                                     <td style="color: #ffffff;"><?= $game['name'] ?></td>
-                                    <td><?=  $game['username'] ?></td>
-                                    <td><?=  $game['genre'] ?></td>
+                                    <td><?= $game['username'] ?></td>
+                                    <td><?= $game['genre'] ?></td>
                                     <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
                                     <td>
-                                        <?php if (isset($game['is_approved'])&&$game['is_approved']==1): ?>
+                                        <?php if (isset($game['is_approved']) && $game['is_approved'] == 1): ?>
                                             <span class="badge badge-success">Active</span>
-                                        <?php elseif (isset($game['is_approved'])&&$game['is_approved']==0) : ?>
+                                        <?php elseif (isset($game['is_approved']) && $game['is_approved'] == 0) : ?>
                                             <span class="badge badge-warning">Pending</span>
                                         <?php endif; ?>
                                     </td>
@@ -336,27 +354,67 @@
 
         // Handle approve/reject actions
         document.querySelectorAll('.btn-approve').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 if (confirm('Approve this game for publication?')) {
-                    // Handle approve action
-                    console.log('Game approved');
-                    this.closest('tr').style.backgroundColor = '#1b4d1b';
-                    setTimeout(() => {
-                        this.closest('tr').remove();
-                    }, 1000);
+                    const gameId = this.getAttribute('data-game-id');
+                    const row = this.closest('tr');
+
+                    try {
+                        const response = await fetch(`../api/admin/games/${gameId}/approve`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            row.style.backgroundColor = '#1b4d1b';
+                            setTimeout(() => {
+                                row.remove();
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            alert('Failed to approve game: ' + (data.message || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('Error approving game:', error);
+                        alert('An error occurred while approving the game.');
+                    }
                 }
             });
         });
 
         document.querySelectorAll('.btn-reject').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 if (confirm('Reject this game? The developer will be notified.')) {
-                    // Handle reject action
-                    console.log('Game rejected');
-                    this.closest('tr').style.backgroundColor = '#4d1b1b';
-                    setTimeout(() => {
-                        this.closest('tr').remove();
-                    }, 1000);
+                    const gameId = this.getAttribute('data-game-id');
+                    const row = this.closest('tr');
+
+                    try {
+                        const response = await fetch(`../api/admin/games/${gameId}/reject`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            row.style.backgroundColor = '#4d1b1b';
+                            setTimeout(() => {
+                                row.remove();
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            alert('Failed to reject game: ' + (data.message || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('Error rejecting game:', error);
+                        alert('An error occurred while rejecting the game.');
+                    }
                 }
             });
         });
