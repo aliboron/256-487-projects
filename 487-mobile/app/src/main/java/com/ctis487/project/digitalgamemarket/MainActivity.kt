@@ -69,9 +69,10 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val storeAdapter = StoreGamesAdapter(emptyList()){ game ->
+        val storeAdapter = StoreGamesAdapter(emptyList()){ game, price ->
             val intent = Intent(this, CheckoutActivity::class.java)
             intent.putExtra("gameId", game.id)
+            intent.putExtra("price", price)
 
             startActivity(intent)
         }

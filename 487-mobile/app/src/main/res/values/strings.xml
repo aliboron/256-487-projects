@@ -48,7 +48,7 @@
 
     <!-- Format Strings -->
     <string name="format_total">Total: %1$.2f $ (%2$s)</string>
-    <string name="format_price">%s $</string>
+    <string name="format_price">%2s $</string>
 
     <!-- Settings Activity -->
     <string name="txt_settings">Settings</string>
