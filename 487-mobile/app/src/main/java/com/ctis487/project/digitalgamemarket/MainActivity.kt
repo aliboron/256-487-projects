@@ -32,6 +32,9 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var userRepo : UserRepository
     lateinit var gameRepo : GameRepository
+    lateinit var storeLayoutManager : GridLayoutManager
+
+    var currentLang = ""
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.setLocale(newBase, LocaleHelper.getLanguage(newBase)))
@@ -40,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        currentLang = LocaleHelper.getLanguage(this)
 
         WorkManager.getInstance(this).cancelAllWorkByTag("marketing_worker")
 
@@ -65,20 +70,19 @@ class MainActivity : AppCompatActivity() {
         userRepo = UserRepository(db.userDAO(), ApiClient.getClient().create(GameMarketApiService::class.java))
         gameRepo = GameRepository(db.gameDAO(), ApiClient.getClient().create(GameMarketApiService::class.java))
 
-        gameRepo.allGames.observe(this) {
-
-        }
 
         val storeAdapter = StoreGamesAdapter(emptyList()){ game, price ->
             val intent = Intent(this, CheckoutActivity::class.java)
             intent.putExtra("gameId", game.id)
             intent.putExtra("price", price)
-
+            if (price < game.price) playWowEffect()
             startActivity(intent)
         }
+        storeLayoutManager = GridLayoutManager(this, gridColumns)
 
         binding.storeItemsRecycler.adapter = storeAdapter
-        binding.storeItemsRecycler.layoutManager = GridLayoutManager(this, gridColumns)
+        binding.storeItemsRecycler.layoutManager = storeLayoutManager
+
 
         val featuredGamesAdapter = FeaturedGamesAdapter(mutableMapOf()) { game ->
             Toast.makeText(this, "${game.name} tıklandı", Toast.LENGTH_SHORT).show()
@@ -142,6 +146,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        val newLang = LocaleHelper.getLanguage(this)
+
+        if (!newLang.equals(currentLang)){
+            currentLang = newLang
+            recreate()
+        }
     }
 
     private fun displayToast(message: String) {
@@ -151,6 +162,16 @@ class MainActivity : AppCompatActivity() {
     private fun playClickSound() {
         try {
             val mediaPlayer = MediaPlayer.create(this, R.raw.click_sound)
+            mediaPlayer.setOnCompletionListener { mp -> mp.release() }
+            mediaPlayer.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun playWowEffect() {
+        try {
+            val mediaPlayer = MediaPlayer.create(this, R.raw.wow)
             mediaPlayer.setOnCompletionListener { mp -> mp.release() }
             mediaPlayer.start()
         } catch (e: Exception) {

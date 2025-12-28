@@ -1,6 +1,7 @@
 package com.ctis487.project.digitalgamemarket.adapter
 
 import android.graphics.drawable.AnimationDrawable
+import android.media.MediaPlayer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -88,7 +89,7 @@ class StoreGamesAdapter(
                     ignoreCase = false
                 )
             }
-            var discPrice = game.price * 0.8
+            var discPrice = game.price * 0.80
             itemHolder.binding.tvGamePrice.text = String.format(Locale.US, "$%.2f", discPrice)
 
             Glide.with(itemHolder.itemView.context)
@@ -126,5 +127,6 @@ class StoreGamesAdapter(
         }
         notifyDataSetChanged()
     }
+
 
 }
