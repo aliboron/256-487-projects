@@ -173,6 +173,12 @@ class UserRepository
         $stmt->execute(['id' => $id]);
         return $stmt->rowCount() > 0;
     }
+    public function activateUser(int $id): bool
+    {
+        $stmt = $this->db->prepare("UPDATE users SET is_verified = 1 WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->rowCount() > 0;
+    }
 
     /**
      * Check if a user is verified

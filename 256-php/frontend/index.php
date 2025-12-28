@@ -1,10 +1,12 @@
 <?php
 // Sample games data - will be replaced with API call later
 require_once __DIR__ . "/vendor/autoload.php";
-$httpClient = new \GuzzleHttp\Client(["verify" => false]);
-$response = $httpClient->get("http://ctis256.aliboron.tr/api/games");
-$responseContent = json_decode($response->getBody()->getContents());
-$games = $responseContent->data;
+require_once __DIR__ . '/../api/db.php';
+
+$stmt = $db->prepare("select * from games");
+$stmt->execute();
+$games = $db->query("SELECT g.*, u.username, gm.file_path FROM games g JOIN users u JOIN game_media gm ON g.id = gm.game_id WHERE u.id=g.developer_id")->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <?php $activePage = 'store'; ?>
 <!DOCTYPE html>
@@ -39,8 +41,57 @@ $games = $responseContent->data;
         </div>
     </section>
 
+
+
     <!-- Main Content -->
     <div class="container">
+        <section class="featured-games">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h4 mb-0">Featured Games</h2>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-target="#featured-carousel" data-bs-slide="prev">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" data-bs-target="#featured-carousel" data-bs-slide="next">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <?php
+                $featuredGames = $games;
+                shuffle($featuredGames);
+                $featuredGames = array_slice($featuredGames, 0, 4);
+                ?>
+
+                <?php if (!empty($featuredGames)): ?>
+                    <div id="featured-carousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                        <div class="carousel-inner">
+                            <?php foreach ($featuredGames as $i => $game): ?>
+                                <?php
+                                $title = $game['title'] ?? $game['name'] ?? 'Untitled';
+                                $banner = $game['file_path'] ?? 'img/placeholder-banner.jpg';
+                                ?>
+                                <div class="carousel-item <?php echo $i === 0 ? 'active' : '' ?>">
+                                    <div class="featured-banner">
+                                        <img src="<?php echo htmlspecialchars($banner); ?>" class="w-100" alt="<?php echo htmlspecialchars($title); ?>">
+                                        <div class="featured-banner-content">
+                                            <h3 class="featured-banner-title mb-1"><?php echo htmlspecialchars($title); ?></h3>
+                                            <?php if (!empty($game['genre'])): ?>
+                                                <span class="badge bg-dark-subtle text-dark"><?php echo htmlspecialchars($game['genre']); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <p class="text-muted">No games to feature.</p>
+                <?php endif; ?>
+            </div>
+        </section>
         <!-- Filter Section -->
         <div class="filter-section">
             <div class="row align-items-center">
@@ -53,11 +104,8 @@ $games = $responseContent->data;
                         <option value="all">All Genres</option>
                         <?php
                         // Extract unique genres
-                        $genres = [];
-                        foreach ($games as $key => $game) {
-                            array_push($genres, $game->genre);
-                        }
-                        $genres = array_unique($genres);
+
+                        $genres = array_unique(array_column($games, 'genre'));
                         sort($genres);
                         foreach ($genres as $genre):
                         ?>
@@ -79,6 +127,7 @@ $games = $responseContent->data;
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 games-grid">
             <?php foreach ($games as $game): ?>
                 <?php
+                //var_dump($game);
                 $type = 'store';
                 include 'components/game_card.php';
                 ?>

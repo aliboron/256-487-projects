@@ -8,27 +8,34 @@
  */
 
 $cardType = $type ?? 'store';
-$gameData = $game;
+$gameData = $game ?? [];
 ?>
 
 <div class="col game-item"
     data-genre="<?php echo htmlspecialchars($gameData["genre"]); ?>"
-    <?php if ($cardType === 'library'): //Burayı düzelt?>
+    <?php if ($cardType === 'library'): //Burayı düzelt
+    ?>
     data-name="<?php echo htmlspecialchars($gameData["name"]); ?>"
     data-date="<?php echo htmlspecialchars($gameData["purchase_date"]); ?>"
     data-playtime="<?php echo (int)filter_var($gameData["playtime"], FILTER_SANITIZE_NUMBER_INT); ?>"
     <?php endif; ?>>
-    <div class="game-card">
-        <img src="<?php echo htmlspecialchars($gameData["logo_path"]); ?>"
-            alt="<?php echo htmlspecialchars($gameData["name"]); ?>"
-            class="game-card-img"
-            onerror="this.src='https://via.placeholder.com/264x352/2a2a2a/ffffff?text=No+Image'">
+    <div class="game-card <?= in_array($game, $featuredGames) ? "featured-card" :"" ?>">
+        <?php
+        $path = $game['logo_path'] ?? null;
+        $imgSrc = $path
+            ?? 'https://r2.ctis256.sezertetik.dev/' . $game['file_path']
+        ?>
+        <img
+            src="<?= htmlspecialchars($imgSrc) ?>"
+            alt="<?= htmlspecialchars($game['name'] ?? 'Game') ?>"
+            class="game-thumbnail">
         <div class="game-card-body">
             <h5 class="game-title"><?php echo htmlspecialchars($gameData["name"]); ?></h5>
             <span class="game-genre"><?php echo htmlspecialchars($gameData["genre"]); ?></span>
             <p class="game-description"><?php echo htmlspecialchars($gameData["description"]); ?></p>
 
-            <?php if ($cardType === 'library')://Burayı düzelt ?>
+            <?php if ($cardType === 'library'): //Burayı düzelt 
+            ?>
                 <!-- Library view: Show playtime and purchase date -->
                 <div class="game-stats">
                     <div class="stat-item">
@@ -47,8 +54,8 @@ $gameData = $game;
             <?php else: ?>
                 <!-- Store view: Show price and buy button -->
                 <div class="game-footer">
-                    <div class="game-price"><i class="fa-solid fa-dollar-sign"></i><?php echo number_format($gameData->price, 2); ?></div>
-                    <a href="checkout.php?game_id=<?php echo $gameData->id; ?>" class="btn btn-add-cart"><i class="fa-solid fa-cart-shopping"></i> Buy Game</a>
+                    <div class="game-price"><i class="fa-solid fa-dollar-sign"></i><?php echo number_format($gameData["price"], 2); ?></div>
+                    <a href="checkout.php?game_id=<?php echo $gameData["id"]; ?>" class="btn btn-add-cart"><i class="fa-solid fa-cart-shopping"></i> Buy Game</a>
                 </div>
             <?php endif; ?>
         </div>

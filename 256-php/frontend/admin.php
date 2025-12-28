@@ -211,8 +211,18 @@ $activeSection = $_GET["section"] ?? "dashboard";
                             <tbody>
                                 <?php foreach ($approvedGames as $game): ?>
                                     <tr>
-                                        <td><img src="<?= $game['logo_path'] ?>" alt="<?= $game['name'] ?>" class="game-thumbnail"></td>
-                                        <td style="color: #ffffff;"><?= $game['name'] ?></td>
+                                         <td>
+                                            <?php
+                                            $path = $game['logo_path'] ?? null;
+                                            $imgSrc = $path
+                                                ?? 'https://r2.ctis256.sezertetik.dev/' . $game['file_path']
+                                            ?>
+                                            <img
+                                                src="<?= htmlspecialchars($imgSrc) ?>"
+                                                alt="<?= htmlspecialchars($game['name'] ?? 'Game') ?>"
+                                                class="game-thumbnail">
+                                        </td>
+                                        <td style="color: #ffffff;"><?=  $game['name'] ?></td>
                                         <td><?= $game['username'] ?></td>
                                         <td><?= $game['genre'] ?></td>
                                         <td style="color: #4CAF50;">$<?= $game['price'] ?></td>
@@ -222,8 +232,15 @@ $activeSection = $_GET["section"] ?? "dashboard";
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <button class="btn-action btn-edit"><i class="fa-solid fa-pen"></i> Edit</button>
-                                            <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                                            <button class="btn-action btn-edit"
+                                                data-game-id="<?php echo $game['id']; ?>"
+                                                data-game-name="<?php echo htmlspecialchars($game['name']); ?>"
+                                                data-game-genre="<?php echo htmlspecialchars($game['genre']); ?>"
+                                                data-game-description="<?php echo htmlspecialchars($game['description']); ?>"
+                                                data-game-price="<?php echo $game['price']; ?>">
+                                                <i class="fa-solid fa-pen"></i> Edit
+                                            </button>
+                                            <button class="btn-action btn-delete" id="gameDelete" data-game-id="<?php echo $game['id']; ?>" data-game-name="<?php echo htmlspecialchars($game['name']); ?>"><i class="fa-solid fa-trash"></i> Delete</button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -266,15 +283,22 @@ $activeSection = $_GET["section"] ?? "dashboard";
                                         <td><?= $dev['email'] ?></td>
                                         <td><?= $dev['game_count'] ?> games</td>
                                         <td>
-                                            <?php if (isset($dev['is_verified']) && $dev['is_verified'] == 1): ?>
-                                                <span class="badge badge-success">Active</span>
-                                            <?php endif; ?>
+                                        <?php if (isset($dev['is_verified'])&&$dev['is_verified']==1): ?>
+                                            <span class="badge badge-success">Active</span>
+                                        <?php elseif(isset($dev['is_verified'])&&$dev['is_verified']==0): ?>
+                                            <span class="badge badge-danger">Passive</span>   
+                                        <?php endif; ?>
                                         </td>
                                         <td><?= $dev['registered_at'] ?></td>
                                         <td>
-                                            <button class="btn-action btn-view" data-developer-id="<?= $dev['id'] ?>"><i class="fa-solid fa-eye"></i> View Games</button>
-                                            <button class="btn-action btn-deactivate"><i class="fa-solid fa-ban"></i> Deactivate</button>
-                                            <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                                            <button class="btn-action btn-view"><i class="fa-solid fa-eye"></i> View Games</button>
+                                            <?php if (isset($dev['is_verified'])&&$dev['is_verified']==1): ?>
+                                            <button class="btn-action btn-deactivate" id="btnDeveloperDeactivate" data-developer-id='<?= $dev['id']?>'><i class="fa-solid fa-ban"></i> Deactivate</button>
+                                            <?php elseif(isset($dev['is_verified'])&&$dev['is_verified']==0): ?>
+                                            <button class="btn-action btn-activate" id="btnDeveloperActivate" data-developer-id='<?= $dev['id']?>'><i class="fa-solid fa-check"></i> Activate</button>
+                                         <?php endif; ?>
+                                            
+                                            <button class="btn-action btn-delete"id="btnDeveloperDel" data-developer-id='<?= $dev['id']?>'><i class="fa-solid fa-trash"></i> Delete</button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -342,9 +366,16 @@ $activeSection = $_GET["section"] ?? "dashboard";
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <button class="btn-action btn-edit"><i class="fa-solid fa-pen"></i> Edit</button>
-                                        <button class="btn-action btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
-                                    </td>
+                                            <button class="btn-action btn-edit"
+                                                data-game-id="<?php echo $game['id']; ?>"
+                                                data-game-name="<?php echo htmlspecialchars($game['name']); ?>"
+                                                data-game-genre="<?php echo htmlspecialchars($game['genre']); ?>"
+                                                data-game-description="<?php echo htmlspecialchars($game['description']); ?>"
+                                                data-game-price="<?php echo $game['price']; ?>">
+                                                <i class="fa-solid fa-pen"></i> Edit
+                                            </button>
+                                            <button class="btn-action btn-delete" id="gameDelete" data-game-id="<?php echo $game['id']; ?>" data-game-name="<?php echo htmlspecialchars($game['name']); ?>"><i class="fa-solid fa-trash"></i> Delete</button>
+                                        </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -353,30 +384,88 @@ $activeSection = $_GET["section"] ?? "dashboard";
             <?php endif; ?>
         </main>
     </div>
+      <!-- Edit Game Modal -->
+    <div class="modal fade" id="editGameModal" tabindex="-1" aria-labelledby="editGameModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: #1a1a1a; color: #ffffff;">
+                <div class="modal-header" style="border-bottom: 1px solid #2d2d2d;">
+                    <h5 class="modal-title" id="editGameModalLabel">
+                        <i class="fa-solid fa-pen"></i> Edit Game
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editGameForm">
+                        <input type="hidden" id="editGameId">
 
-    <script src="vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+                        <div class="form-group" style=" margin-bottom:1rem;">
+                            <label for="editGameName" style="display: block; margin-bottom:0.5rem;">
+                                <i class="fa-solid fa-gamepad"></i> Game Name *
+                            </label>
+                            <input type="text" id="editGameName" class="form-control" required
+                                style="background: #2d2d2d; border: 1px solid #404040; color: #ffffff; padding: 0.5rem;">
+                        </div>
+
+                        <div class="form-group" style=" margin-bottom:1rem;">
+                            <label for="editGameGenre" style="display: block; margin-bottom:0.5rem;">
+                                <i class="fa-solid fa-tag"></i> Genre *
+                            </label>
+                            <select id="editGameGenre" class="form-control" required
+                                style="background: #2d2d2d; border: 1px solid #404040; color: #ffffff; padding: 0.5rem;">
+                                <option value="">Select Genre</option>
+                                <option value="Action">Action</option>
+                                <option value="Adventure">Adventure</option>
+                                <option value="RPG">RPG</option>
+                                <option value="Strategy">Strategy</option>
+                                <option value="Shooter">Shooter</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Racing">Racing</option>
+                                <option value="Fighting">Fighting</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label for="editGameDescription" style="display: block; margin-bottom:0.5rem;">
+                                <i class="fa-solid fa-align-left"></i> Description *
+                            </label>
+                            <textarea id="editGameDescription" class="form-control" required rows="4"
+                                style="background: #2d2d2d; border: 1px solid #404040; color: #ffffff; padding: 0.5rem;"></textarea>
+                        </div>
+
+                        <div class="form-group" style=" margin-bottom:1rem;">
+                            <label for="editGamePrice" style="display: block; margin-bottom:0.5rem;">
+                                <i class="fa-solid fa-dollar-sign"></i> Price (USD) *
+                            </label>
+                            <input type="number" id="editGamePrice" class="form-control" step="0.01" min="0" required
+                                style="background: #2d2d2d; border: 1px solid #404040; color: #ffffff; padding: 0.5rem;">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #2d2d2d;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="saveGameChanges">
+                        <i class="fa-solid fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
-        // Add confirmation for delete actions
-        document.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
-                    // Handle delete action
-                    console.log('Delete confirmed');
-                }
-            });
+        
+       
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btn-view')) {
+                    e.preventDefault();
+                    window.location.href = 'admin.php?section=all-games';
+            }
         });
-
-        // Add confirmation for deactivate actions
-        document.querySelectorAll('.btn-deactivate').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (confirm('Are you sure you want to deactivate this developer account?')) {
-                    // Handle deactivate action
-                    console.log('Deactivate confirmed');
-                }
-            });
-        });
-
-        // Handle approve/reject actions
+       
         document.querySelectorAll('.btn-approve').forEach(btn => {
             btn.addEventListener('click', async function() {
                 if (confirm('Approve this game for publication?')) {
@@ -469,6 +558,251 @@ $activeSection = $_GET["section"] ?? "dashboard";
                 }
             });
         }
+        document.addEventListener('click', async function (e) {
+        if (e.target.id === 'btnDeveloperDel') {
+        e.preventDefault();
+
+        const developerId = e.target.dataset.developerId;
+        if (!developerId) {
+            alert('Developer ID missing');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this developer? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`../api/admin/developer/${developerId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.success === false) {
+                alert(result.message || 'Delete failed');
+                return;
+            }
+
+            alert('Developer deleted successfully');
+
+        } catch (error) {
+            console.error(error);
+            alert('Network error occurred');
+        }
+    }
+    });
+    document.addEventListener('click', async function (e) {
+     if (e.target.id === 'btnDeveloperDeactivate') {
+        e.preventDefault();
+
+        const developerId = e.target.dataset.developerId;
+        if (!developerId) {
+            alert('Developer ID not found');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to deactivate this developer?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`../api/admin/developer/${developerId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.success === false) {
+                alert(result.message || 'Deactivate failed');
+                return;
+            }
+
+            alert('Developer deactivated successfully');
+
+        } catch (error) {
+            console.error(error);
+            alert('Network error');
+        }
+    }
+    else if (e.target.id === 'btnDeveloperActivate') {
+        e.preventDefault();
+
+        const developerId = e.target.dataset.developerId;
+        if (!developerId) {
+            alert('Developer ID not found');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to activate this developer?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`../api/admin/developer/${developerId}/activate`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || result.success === false) {
+                alert(result.message || 'Activation failed');
+                return;
+            }
+
+            alert('Developer activated successfully');
+
+        } catch (error) {
+            console.error(error);
+            alert('Network error');
+        }
+    }
+});
+ 
+ document.querySelectorAll('#gameDelete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const gameId = this.getAttribute('data-game-id');
+                const gameName = this.getAttribute('data-game-name');
+                if (!gameId) {
+                    alert('Unable to delete: Game ID not found');
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to delete "${gameName}"? This action cannot be undone.`)) {
+                    const deleteBtn = $(this);
+                    const originalBtnHtml = deleteBtn.html();
+
+                    deleteBtn.prop('disabled', true);
+                    deleteBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Deleting...');
+
+                    $.ajax({
+                        url: '/api/games/' + gameId,
+                        type: 'DELETE',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                alert('Game deleted successfully!');
+                                deleteBtn.closest('tr').fadeOut(300, function() {
+                                    $(this).remove();
+                                    window.location.reload();
+                                });
+                            } else {
+                                alert('Failed to delete game: ' + (response.message || 'Unknown error'));
+                                deleteBtn.prop('disabled', false);
+                                deleteBtn.html(originalBtnHtml);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error deleting game:', error);
+                            console.error('XHR Response:', xhr);
+                            let errorMsg = 'Failed to delete game. Please try again.';
+
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMsg = xhr.responseJSON.message;
+                            } else if (xhr.responseText) {
+                                errorMsg = 'Server error: ' + xhr.responseText;
+                            }
+
+                            alert(errorMsg);
+                            deleteBtn.prop('disabled', false);
+                            deleteBtn.html(originalBtnHtml);
+                        }
+                    });
+                }
+            });
+        });
+         document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const gameId = this.getAttribute('data-game-id');
+                const gameName = this.getAttribute('data-game-name');
+                const gameGenre = this.getAttribute('data-game-genre');
+                const gameDescription = this.getAttribute('data-game-description');
+                const gamePrice = this.getAttribute('data-game-price');
+
+                // Populate modal fields
+                $('#editGameId').val(gameId);
+                $('#editGameName').val(gameName);
+                $('#editGameGenre').val(gameGenre);
+                $('#editGameDescription').val(gameDescription);
+                $('#editGamePrice').val(gamePrice);
+
+                // Show modal
+                const editModal = new bootstrap.Modal(document.getElementById('editGameModal'));
+                editModal.show();
+            });
+           
+        });
+         $('#saveGameChanges').on('click', function() {
+            const gameId = $('#editGameId').val();
+            const gameData = {
+                name: $('#editGameName').val(),
+                genre: $('#editGameGenre').val(),
+                description: $('#editGameDescription').val(),
+                price: parseFloat($('#editGamePrice').val())
+            };
+
+            // Validate
+            if (!gameData.name || !gameData.genre || !gameData.description || !gameData.price) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const saveBtn = $(this);
+            const originalBtnHtml = saveBtn.html();
+            saveBtn.prop('disabled', true);
+            saveBtn.html('<i class="fa-solid fa-spinner fa-spin"></i> Saving...');
+
+            // Make PUT request
+            $.ajax({
+                url: '/api/admin/games/' + gameId,
+                type: 'PATCH',
+                contentType: 'application/json',
+                data: JSON.stringify(gameData),
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Game updated successfully!');
+                        // Close modal
+                        bootstrap.Modal.getInstance(document.getElementById('editGameModal')).hide();
+                        // Reload page to show updated data
+                        window.location.reload();
+                    } else {
+                        alert('Failed to update game: ' + (response.message || 'Unknown error'));
+                        saveBtn.prop('disabled', false);
+                        saveBtn.html(originalBtnHtml);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating game:', error);
+                    let errorMsg = 'Failed to update game. Please try again.';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+
+                    alert(errorMsg);
+                    saveBtn.prop('disabled', false);
+                    saveBtn.html(originalBtnHtml);
+                }
+            });
+            });
+
     </script>
 </body>
 
