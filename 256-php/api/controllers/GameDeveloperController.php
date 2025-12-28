@@ -48,75 +48,51 @@ class GameDeveloperController
         }
     }
 
-    #[Route('/developers/{developerId}/gamers', 'GET')]
-    public function getGamersForDeveloper(int $developerId): ApiResponse
-    {
-        $isVerified = $this->isDeveloperVerified($developerId);
-        if (!$isVerified) return new ApiResponse(false, null, "Developer is not verified, so that they cannot access gamers.");
-
-        try {
-            global $db;
-            $gamersQuery = "SELECT DISTINCT 
-                u.id,
-                u.username,
-                u.email,
-                g.name as game_purchased,
-                c.date as purchase_date,
-                c.payment_total as price_paid
-                FROM checkouts c
-                JOIN users u ON c.user_id = u.id
-                JOIN games g ON c.game_id = g.id
-                WHERE g.developer_id = ?
-                ORDER BY c.date DESC";
-            
-            $stmt = $db->prepare($gamersQuery);
-            $stmt->execute([$developerId]);
-            $gamers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            return new ApiResponse(true, $gamers);
-        } catch (Exception $e) {
-            return new ApiResponse(false, null, "Error retrieving gamers: " . $e->getMessage());
-        }
-    }
-
     #[Route('/developers/{developerId}/games', 'POST')]
     public function createGameForDeveloper(int $developerId): ApiResponse
     {
-        // Get from the body
         $input = json_decode(file_get_contents('php://input'), true);
 
-        // Validate required fields
+        error_log("Game creation request - Developer ID: $developerId");
+        error_log("Input data: " . json_encode($input));
+
         $required = ['name', 'description', 'price', 'genre', 'developer_id'];
         foreach ($required as $field) {
             if (!isset($input[$field]) || $input[$field] === '') {
+                error_log("Validation failed: Field '$field' is missing or empty");
                 return new ApiResponse(false, null, "Field '$field' is required");
             }
         }
 
-        // Verify the developer ID matches
         if ((int)$input['developer_id'] !== $developerId) {
             return new ApiResponse(false, null, "Developer ID mismatch.");
         }
 
         $isVerified = $this->isDeveloperVerified($developerId);
-        if (!$isVerified) return new ApiResponse(false, null, "Developer is not verified, so that they cannot create games.");
+        if (!$isVerified) {
+            error_log("Game creation failed: Developer $developerId is not verified");
+            return new ApiResponse(false, null, "Developer is not verified, so that they cannot create games.");
+        }
 
         try {
-            // Create Game object from input
             $game = new Game(
                 id: null,
                 name: $input['name'],
                 description: $input['description'],
                 price: (float)$input['price'],
-                is_approved: (int)($input['is_approved'] ?? 0), // Default to pending
+                is_approved: (int)($input['is_approved'] ?? 0),
                 logo_path: $input['logo_path'] ?? null,
                 developer_id: $developerId,
                 genre: $input['genre']
             );
 
+            error_log("Creating game object: " . json_encode($game->toArray()));
             $newGame = $this->gameRepository->createGame($game);
+            error_log("Game created successfully with ID: " . $newGame->id);
             return new ApiResponse(true, $newGame->toArray(), "Game created successfully.");
         } catch (Exception $e) {
+            error_log("Exception during game creation: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return new ApiResponse(false, null, "Error creating game: " . $e->getMessage());
         }
     }
@@ -140,15 +116,36 @@ class GameDeveloperController
     }
 
     #[Route('/developers/{developerId}/games/{gameId}', 'PUT')]
-    public function updateGameForDeveloper(int $developerId, Game $game): ApiResponse
+    public function updateGameForDeveloper(int $developerId, int $gameId): ApiResponse
     {
         $isVerified = $this->isDeveloperVerified($developerId);
         if (!$isVerified) return new ApiResponse(false, null, "Developer is not verified, so that they cannot update games.");
 
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $existingGame = $this->gameRepository->find($gameId);
+        if (!$existingGame) {
+            return new ApiResponse(false, null, "Game not found.");
+        }
+
+        if ($existingGame->developer_id !== $developerId) {
+            return new ApiResponse(false, null, "You don't have permission to update this game.");
+        }
+
         try {
-            $updatedGame = $this->gameRepository->updateGame($game);
+            $updateData = [];
+            if (isset($input['name'])) $updateData['name'] = $input['name'];
+            if (isset($input['description'])) $updateData['description'] = $input['description'];
+            if (isset($input['price'])) $updateData['price'] = (float)$input['price'];
+            if (isset($input['genre'])) $updateData['genre'] = $input['genre'];
+
+            if (empty($updateData)) {
+                return new ApiResponse(false, null, "No fields provided for update.");
+            }
+
+            $updatedGame = $this->gameRepository->update($gameId, $updateData);
             if ($updatedGame) {
-                return new ApiResponse(true, $updatedGame);
+                return new ApiResponse(true, $updatedGame->toArray(), "Game updated successfully.");
             } else {
                 return new ApiResponse(false, null, "Game not found or could not be updated.");
             }
@@ -163,7 +160,6 @@ class GameDeveloperController
         $isVerified = $this->isDeveloperVerified($developerId);
         if (!$isVerified) return new ApiResponse(false, null, "Developer is not verified, so they cannot upload game assets.");
 
-        // Check if file was uploaded
         if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
             $errorMsg = isset($_FILES['file']) ? $this->getUploadErrorMessage($_FILES['file']['error']) : "No file uploaded.";
             return new ApiResponse(false, null, $errorMsg);
@@ -174,7 +170,6 @@ class GameDeveloperController
             $originalFileName = basename($uploadedFile['name']);
             $tempPath = $uploadedFile['tmp_name'];
 
-            // Determine media type from file extension
             $extension = strtolower(pathinfo($originalFileName, PATHINFO_EXTENSION));
             $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
             $videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'];
@@ -187,24 +182,19 @@ class GameDeveloperController
                 return new ApiResponse(false, null, "Invalid file type. Only images and videos are allowed.");
             }
 
-            // Get S3 client
             $s3Client = getS3Client();
 
-            // Generate completely unique file name (UUID-like format)
-            $uniqueId = uniqid('', true); // e.g., 6762abc123.456789
-            $randomHash = bin2hex(random_bytes(8)); // 16 character hex string
+            $uniqueId = uniqid('', true);
+            $randomHash = bin2hex(random_bytes(8));
             $generatedFileName = "{$mediaType}_{$gameId}_{$uniqueId}_{$randomHash}.{$extension}";
             $r2Path = "games/{$gameId}/media/{$generatedFileName}";
 
-            // Read file content
             $fileContent = file_get_contents($tempPath);
 
-            // Determine MIME type
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mimeType = finfo_file($finfo, $tempPath);
             finfo_close($finfo);
 
-            // Upload to R2
             $result = $s3Client->putObject([
                 'Bucket' => getBucketName(),
                 'Key' => $r2Path,
@@ -212,13 +202,11 @@ class GameDeveloperController
                 'ContentType' => $mimeType ?: 'application/octet-stream'
             ]);
 
-            // Get the next display order for this game
             global $db;
             $stmt = $db->prepare("SELECT COALESCE(MAX(display_order), -1) + 1 as next_order FROM game_media WHERE game_id = ?");
             $stmt->execute([$gameId]);
             $displayOrder = $stmt->fetchColumn();
 
-            // Insert record into game_media table
             $stmt = $db->prepare("
                 INSERT INTO game_media (game_id, media_type, file_path, file_name, display_order) 
                 VALUES (?, ?, ?, ?, ?)

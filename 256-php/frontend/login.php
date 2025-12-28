@@ -1,4 +1,38 @@
-<?php $activePage = 'login'; ?>
+<?php
+$activePage = 'login';
+
+// Start session
+session_start();
+
+// If user is already logged in, redirect to appropriate page
+if (isset($_SESSION['user_id']) && isset($_SESSION['user_data'])) {
+    $userType = $_SESSION['user_data']['type'] ?? 'user';
+
+    // Check if there's a redirect parameter
+    $redirect = $_GET['redirect'] ?? '';
+    $gameId = $_GET['game_id'] ?? '';
+
+    if ($redirect === 'checkout' && $gameId) {
+        header('Location: checkout.php?game_id=' . urlencode($gameId));
+        exit;
+    } elseif ($redirect) {
+        header('Location: ' . $redirect . '.php');
+        exit;
+    } else {
+        // Redirect based on user type
+        if ($userType === 'game_developer') {
+            header('Location: game_developer.php');
+            exit;
+        } elseif ($userType === 'admin') {
+            header('Location: admin.php');
+            exit;
+        } else {
+            header('Location: index.php');
+            exit;
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -171,6 +205,13 @@
                     },
                     success: function(response) {
                         console.log('Login successful:', response);
+
+                        // Store user data in localStorage
+                        if (response.data && response.data.user) {
+                            localStorage.setItem('userId', response.data.user.id);
+                            localStorage.setItem('username', response.data.user.username);
+                            localStorage.setItem('userType', response.data.user.type);
+                        }
 
                         // Handle redirect
                         if (redirect === 'checkout' && gameId) {

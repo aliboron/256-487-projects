@@ -144,7 +144,7 @@ class LoginController
     public function getCurrentUser()
     {
         ensureSession();
-        
+
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
             http_response_code(401);
             return new ApiResponse(false, null, "Not authenticated");
