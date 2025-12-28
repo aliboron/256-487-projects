@@ -1,5 +1,4 @@
 <?php
-// Sample games data - will be replaced with API call later
 require_once __DIR__ . "/vendor/autoload.php";
 require_once __DIR__ . '/../api/db.php';
 
@@ -30,10 +29,8 @@ $games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM ga
 </head>
 
 <body>
-    <!-- Navigation -->
     <?php include 'components/navbar.php'; ?>
 
-    <!-- Hero Section -->
     <section class="hero-section">
         <div class="container">
             <h1>Discover Amazing Games</h1>
@@ -41,9 +38,6 @@ $games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM ga
         </div>
     </section>
 
-
-
-    <!-- Main Content -->
     <div class="container">
         <section class="featured-games">
             <div class="container">
@@ -65,14 +59,14 @@ $games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM ga
                 $featuredGames = array_slice($featuredGames, 0, 4);
                 while (true) {
                     $allBanner = true;
-                    foreach($featuredGames as $game){
+                    foreach ($featuredGames as $game) {
                         $allBanner = str_contains($game["file_name"], "banner") && $allBanner;
                     }
-                    if (!$allBanner){
+                    if (!$allBanner) {
                         $featuredGames = $games;
                         shuffle($featuredGames);
                         $featuredGames = array_slice($featuredGames, 0, 4);
-                    }else {
+                    } else {
                         break;
                     }
                 }
@@ -105,7 +99,6 @@ $games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM ga
                 <?php endif; ?>
             </div>
         </section>
-        <!-- Filter Section -->
         <div class="filter-section">
             <div class="row align-items-center">
                 <div class="col-md-4">
@@ -136,11 +129,9 @@ $games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM ga
             </div>
         </div>
 
-        <!-- Games Grid -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4 games-grid">
             <?php foreach ($games as $game): ?>
                 <?php
-                //var_dump($game);
                 $type = 'store';
                 include 'components/game_card.php';
                 ?>
@@ -150,7 +141,6 @@ $games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM ga
 
     <script src="vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Filter and search functionality
         const searchInput = $("#searchInput");
         const genreFilter = $("#genreFilter");
         const gameItems = $('.game-item');
@@ -175,7 +165,6 @@ $games = $db->query(" SELECT g.*, u.username, gm.file_path, gm.file_name FROM ga
                 }
             });
 
-            // Update game count
             gameCount.html(
                 `Showing <strong>${visibleCount}</strong> game${visibleCount !== 1 ? 's' : ''}`
             );

@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/env.php';
 
-// Start session only if not already started
 function ensureSession()
 {
     if (session_status() === PHP_SESSION_NONE) {
@@ -62,9 +61,6 @@ function logout()
     session_destroy();
 }
 
-// ==========================================================
-//  Authorize Attribute
-// ==========================================================
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class Authorize
 {

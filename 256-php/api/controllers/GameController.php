@@ -57,10 +57,6 @@ class GameRepository
         $this->db = $db;
     }
 
-    /**
-     * Get all games
-     * @return Game[]
-     */
     public function getAll(): array
     {
         $stmt = $this->db->prepare("
@@ -76,10 +72,6 @@ class GameRepository
         return $games;
     }
 
-    /**
-     * Get all approved games
-     * @return Game[]
-     */
     public function getAllApproved(): array
     {
         $stmt = $this->db->prepare("
@@ -96,10 +88,6 @@ class GameRepository
         return $games;
     }
 
-    /**
-     * Get games by genre
-     * @return Game[]
-     */
     public function getByGenre(string $genre): array
     {
         $stmt = $this->db->prepare("
@@ -116,10 +104,6 @@ class GameRepository
         return $games;
     }
 
-    /**
-     * Get games by developer
-     * @return Game[]
-     */
     public function getByDeveloper(int $developerId, string $statusFilter): array
     {
         if ($statusFilter === 'approved') {
@@ -156,9 +140,6 @@ class GameRepository
         return $games;
     }
 
-    /**
-     * Find a game by ID
-     */
     public function find(int $id): ?Game
     {
         $stmt = $this->db->prepare("SELECT * FROM games WHERE id = :id");
@@ -168,9 +149,6 @@ class GameRepository
         return $row ? Game::fromArray($row) : null;
     }
 
-    /**
-     * Create a new game
-     */
     public function create(array $data): Game
     {
         $stmt = $this->db->prepare("
@@ -247,19 +225,16 @@ class GameRepository
             SELECT u.* FROM users u
             JOIN game_users gu ON u.id = gu.user_id
             WHERE gu.game_id = :game_id
-        "); # TODO: FIX
+        ");
         $stmt->execute(['game_id' => $gameId]);
 
         $users = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $users[] = $row; // TODO: Convert to User
+            $users[] = $row;
         }
         return $users;
     }
 
-    /**
-     * Update an existing game
-     */
     public function update(int $id, array $data): ?Game
     {
         $fields = [];
@@ -285,9 +260,6 @@ class GameRepository
         return $this->find($id);
     }
 
-    /**
-     * Delete a game
-     */
     public function delete(int $id): bool
     {
         $stmt = $this->db->prepare("DELETE FROM games WHERE id = :id");
@@ -295,9 +267,6 @@ class GameRepository
         return $stmt->rowCount() > 0;
     }
 
-    /**
-     * Approve a game
-     */
     public function approve(int $id): ?Game
     {
         $stmt = $this->db->prepare("UPDATE games SET is_approved = 1 WHERE id = :id");
@@ -313,10 +282,6 @@ class GameRepository
         return $this->find($id);
     }
 
-    /**
-     * Search games by name
-     * @return Game[]
-     */
     public function search(string $query): array
     {
         $stmt = $this->db->prepare("
@@ -344,9 +309,6 @@ class GameController
         $this->repository = new GameRepository($db);
     }
 
-    /**
-     * GET /games - List all approved games
-     */
     #[Route('/games', 'GET')]
     public function listGames(): ApiResponse
     {
@@ -357,9 +319,6 @@ class GameController
         return new ApiResponse(true, $games);
     }
 
-    /**
-     * GET /games/all - List all games (including unapproved, for admin)
-     */
     #[Route('/games/all', 'GET')]
     public function listAllGames(): ApiResponse
     {
@@ -370,9 +329,6 @@ class GameController
         return new ApiResponse(true, $games);
     }
 
-    /**
-     * GET /games/{id} - Get a specific game
-     */
     #[Route('/games/{id}', 'GET')]
     public function getGame(string $id): ApiResponse
     {
@@ -382,9 +338,6 @@ class GameController
             : new ApiResponse(false, null, 'Game not found');
     }
 
-    /**
-     * GET /games/genre/{genre} - Get games by genre
-     */
     #[Route('/games/genre/{genre}', 'GET')]
     public function getGamesByGenre(string $genre): ApiResponse
     {
@@ -395,22 +348,6 @@ class GameController
         return new ApiResponse(true, $games);
     }
 
-    /**
-     * GET /games/developer/{developerId} - Get games by developer
-     */
-    // #[Route('/games/developer/{developerId}', 'GET')]
-    // public function getGamesByDeveloper(string $developerId): ApiResponse
-    // {
-    //     $games = array_map(
-    //         fn(Game $g) => $g->toArray(),
-    //         $this->repository->getByDeveloper((int)$developerId)
-    //     );
-    //     return new ApiResponse(true, $games);
-    // }
-
-    /**
-     * GET /games/search/{query} - Search games by name
-     */
     #[Route('/games/search/{query}', 'GET')]
     public function searchGames(string $query): ApiResponse
     {
@@ -421,15 +358,11 @@ class GameController
         return new ApiResponse(true, $games);
     }
 
-    /**
-     * POST /games - Create a new game
-     */
     #[Route('/games', 'POST')]
     public function createGame(): ApiResponse
     {
         $input = json_decode(file_get_contents("php://input"), true) ?? [];
 
-        // Validate required fields
         $required = ['name', 'description', 'price', 'developer_id', 'genre'];
         foreach ($required as $field) {
             if (!isset($input[$field]) || $input[$field] === '') {
@@ -445,9 +378,6 @@ class GameController
         }
     }
 
-    /**
-     * PUT /games/{id} - Update an existing game
-     */
     #[Route('/games/{id}', 'PUT')]
     public function updateGame(string $id): ApiResponse
     {
@@ -466,9 +396,6 @@ class GameController
         }
     }
 
-    /**
-     * DELETE /games/{id} - Delete a game
-     */
     #[Route('/games/{id}', 'DELETE')]
     public function deleteGame(string $id): ApiResponse
     {
@@ -487,9 +414,6 @@ class GameController
         }
     }
 
-    /**
-     * PATCH /games/{id}/approve - Approve a game
-     */
     #[Route('/games/{id}/approve', 'PATCH')]
     public function approveGame(string $id): ApiResponse
     {

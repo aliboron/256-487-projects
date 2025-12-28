@@ -2,27 +2,19 @@
 
 header('Content-Type: application/json; charset=utf-8');
 
-// ==========================================================
-//  Build $requestPath from REQUEST_URI, relative to /api
-// ==========================================================
-$fullUri   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); // e.g. /api/users/1
-$scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');   // e.g. /api
+$fullUri   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
 
-// Remove the /api prefix if present
 if ($scriptDir !== '/' && strpos($fullUri, $scriptDir) === 0) {
-    $requestPath = substr($fullUri, strlen($scriptDir));       // -> /users/1
+    $requestPath = substr($fullUri, strlen($scriptDir));
 } else {
-    $requestPath = $fullUri;                                   // fallback
+    $requestPath = $fullUri;
 }
 
-// Normalise empty path to '/'
 if ($requestPath === '' || $requestPath === false) {
     $requestPath = '/';
 }
 
-// ==========================================================
-//  Route Attribute
-// ==========================================================
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class Route
 {
@@ -33,9 +25,6 @@ class Route
     ) {}
 }
 
-// ==========================================================
-//  API Response
-// ==========================================================
 class ApiResponse
 {
     public function __construct(
@@ -54,9 +43,6 @@ class ApiResponse
     }
 }
 
-// ==========================================================
-//  Endpoint class
-// ==========================================================
 class Endpoint
 {
     public function __construct(
@@ -94,25 +80,15 @@ class Endpoint
         return preg_match($pattern, $path) === 1;
     }
 
-    /**
-     * Invoke the handler with automatic parameter resolution from:
-     * - Path variables (e.g., /users/{id})
-     * - Query parameters (e.g., ?q=ali&page=2)
-     */
     public function invoke(string $requestPath): mixed
     {
-        // Check authorization if required
         if ($this->requiredRole !== null) {
             requireRole($_SESSION['role'] ?? null, $this->requiredRole);
         }
 
-        // Get path variables
         $pathVars = $this->extractVariables($requestPath);
-
-        // Get query parameters
         $queryParams = $_GET;
 
-        // Check if any query parameter tries to override a path parameter
         $conflicts = array_intersect_key($queryParams, $pathVars);
         if (!empty($conflicts)) {
             $conflictNames = implode(', ', array_keys($conflicts));
@@ -121,10 +97,8 @@ class Endpoint
             );
         }
 
-        // Combine path and query parameters (path vars take precedence)
         $allParams = array_merge($queryParams, $pathVars);
 
-        // Use reflection to get handler parameters
         $reflection = $this->getReflection();
         $params = $reflection->getParameters();
 
@@ -133,16 +107,13 @@ class Endpoint
             $paramName = $param->getName();
             $paramType = $param->getType();
 
-            // Check if parameter value exists
             if (array_key_exists($paramName, $allParams)) {
                 $value = $allParams[$paramName];
 
-                // Treat empty strings as null for nullable parameters
                 if ($paramType && $paramType->allowsNull() && $value === '') {
                     $value = null;
                 }
 
-                // Type conversion (only if value is not null or type doesn't allow null)
                 if ($paramType && $value !== null) {
                     $typeName = $paramType instanceof ReflectionNamedType ? $paramType->getName() : null;
 
@@ -159,13 +130,10 @@ class Endpoint
 
                 $args[] = $value;
             } elseif ($param->isDefaultValueAvailable()) {
-                // Use default value (for optional parameters)
                 $args[] = $param->getDefaultValue();
             } elseif ($paramType && $paramType->allowsNull()) {
-                // Nullable parameter without value
                 $args[] = null;
             } else {
-                // Required parameter missing
                 throw new InvalidArgumentException("Missing required parameter: $paramName");
             }
         }
@@ -173,9 +141,6 @@ class Endpoint
         return call_user_func_array($this->handler, $args);
     }
 
-    /**
-     * Get reflection of the handler method
-     */
     private function getReflection(): ReflectionFunctionAbstract
     {
         if (is_array($this->handler)) {
@@ -186,9 +151,6 @@ class Endpoint
     }
 }
 
-// ==========================================================
-//  Endpoint Manager
-// ==========================================================
 class EndpointManager
 {
     private array $endpoints = [];
@@ -211,14 +173,10 @@ class EndpointManager
     }
 }
 
-// ==========================================================
-//  Auto-registration for a single controller
-// ==========================================================
 function registerRoutesFromController(EndpointManager $manager, object $controller): void
 {
     $ref = new ReflectionClass($controller);
 
-    // Check if controller has Authorize attribute
     $authorizeAttrs = $ref->getAttributes(Authorize::class);
     $requiredRole = null;
     if (!empty($authorizeAttrs)) {
@@ -245,12 +203,6 @@ function registerRoutesFromController(EndpointManager $manager, object $controll
     }
 }
 
-// ==========================================================
-//  Auto-registration for ALL controllers in a folder
-//  Assumes: 
-//    - each file in $dir ends with *Controller.php
-//    - class name == file name (no namespace)
-// ==========================================================
 function registerControllersFromDir(EndpointManager $manager, string $dir): void
 {
     foreach (glob($dir . '/*Controller.php') as $file) {

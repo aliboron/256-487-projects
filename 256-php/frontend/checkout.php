@@ -1,8 +1,6 @@
 <?php
-// Get game ID from URL parameter
 $gameId = $_GET['game_id'] ?? null;
 
-// If no game ID provided, redirect to store
 if (!$gameId) {
     header('Location: not-found.php');
     exit();
@@ -19,19 +17,15 @@ $userId = $_SESSION['user_id'];
 
 require_once __DIR__ . '/../api/db.php';
 
-$stmt = $db->prepare("select g.id,g.name,g.description,g.price, g.logo_path, g.genre, u.username as developer from games g, users u where g.developer_id = u.id and g.id=?") ;
-$stmt->execute([$gameId]) ;
+$stmt = $db->prepare("select g.id,g.name,g.description,g.price, g.logo_path, g.genre, u.username as developer from games g, users u where g.developer_id = u.id and g.id=?");
+$stmt->execute([$gameId]);
 $game = $stmt->fetch(PDO::FETCH_ASSOC) ?? null;
 
-// If game not found, redirect to store
 if (!$game) {
     header('Location: not-found.php');
     exit();
 }
 
-//var_dump($game);
-
-// Calculate tax and total (10% tax rate)
 $subtotal = $game['price'];
 $tax = $subtotal * 0.10;
 $total = $subtotal + $tax;
@@ -56,7 +50,6 @@ $activePage = 'checkout';
 <body>
     <?php include 'components/navbar.php'; ?>
 
-    <!-- Loading state -->
     <div id="loadingState" class="checkout-container">
         <div style="text-align: center; padding: 4rem; color: #888;">
             <i class="fa-solid fa-spinner fa-spin" style="font-size: 3rem; color: #4CAF50;"></i>
@@ -64,7 +57,6 @@ $activePage = 'checkout';
         </div>
     </div>
 
-    <!-- Main content (hidden initially) -->
     <div id="checkoutContent" class="checkout-container" style="display: none;">
         <div class="checkout-header">
             <h1><i class="fa-solid fa-shopping-cart"></i> Checkout</h1>
@@ -73,13 +65,11 @@ $activePage = 'checkout';
 
         <div class="checkout-content">
             <div class="checkout-left">
-                <!-- Game Details Section -->
                 <div class="checkout-section">
                     <h3 class="section-title"><i class="fa-solid fa-gamepad"></i> Game Details</h3>
                     <div class="game-checkout-card">
                         <img src="<?php echo htmlspecialchars($game['logo_path']); ?>"
-                            alt="<?php echo htmlspecialchars($game['name']); ?>"
-                            onerror="this.src='https://via.placeholder.com/150x200/2a2a2a/ffffff?text=No+Image'">
+                            alt="<?php echo htmlspecialchars($game['name']); ?>">
                         <div class="game-checkout-info">
                             <h4><?php echo htmlspecialchars($game['name']); ?></h4>
                             <p class="game-genre"><i class="fa-solid fa-tag"></i> <?php echo htmlspecialchars($game['genre']); ?></p>
@@ -89,7 +79,6 @@ $activePage = 'checkout';
                     </div>
                 </div>
 
-                <!-- Payment Method Section -->
                 <div class="checkout-section">
                     <h3 class="section-title"><i class="fa-solid fa-credit-card"></i> Payment Method</h3>
                     <div class="payment-methods">
@@ -110,7 +99,6 @@ $activePage = 'checkout';
                     </div>
                 </div>
 
-                <!-- Billing Information Section -->
                 <div class="checkout-section">
                     <h3 class="section-title"><i class="fa-solid fa-location-dot"></i> Billing Information</h3>
                     <div class="billing-form">
@@ -139,7 +127,6 @@ $activePage = 'checkout';
                 </div>
             </div>
 
-            <!-- Order Summary Sidebar -->
             <div class="checkout-right">
                 <div class="order-summary">
                     <h3 class="summary-title"><i class="fa-solid fa-receipt"></i> Order Summary</h3>
@@ -179,54 +166,43 @@ $activePage = 'checkout';
     </div>
 
     <script>
-        
         const userId = <?= json_encode($userId) ?>;
         const total = <?= json_encode($total) ?>;
-        const gameId= <?= json_encode($game["id"]) ?>;
+        const gameId = <?= json_encode($game["id"]) ?>;
 
-        
-        // Check authentication on page load
         async function checkAuthentication() {
             try {
                 const response = await fetch('/api/health', {
                     method: 'GET',
-                    credentials: 'include' // Include cookies in the request
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    // User not authenticated, redirect to login
                     window.location.href = 'login.php?redirect=checkout&game_id=<?php echo $gameId; ?>';
                     return;
                 }
 
                 const data = await response.json();
-                console.log('Checkout auth response:', data);
 
-                // Check if user is authenticated from backend
                 if (!data.success || !data.data || !data.data.user) {
                     window.location.href = 'login.php?redirect=checkout&game_id=<?php echo $gameId; ?>';
                     return;
                 }
 
-                // User is authenticated, show checkout content
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('checkoutContent').style.display = 'block';
 
-                // Populate email if available from user data
                 if (data.data.user && data.data.user.email) {
                     document.getElementById('email').value = data.data.user.email;
                 }
             } catch (error) {
                 console.error('Authentication check failed:', error);
-                // On error, redirect to login
                 window.location.href = 'login.php?redirect=checkout&game_id=<?php echo $gameId; ?>';
             }
         }
 
-        // Run authentication check immediately
         checkAuthentication();
 
-        // Payment method toggle
         document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const creditCardForm = document.getElementById('creditCardForm');
@@ -238,14 +214,12 @@ $activePage = 'checkout';
             });
         });
 
-        // Card number formatting
         document.getElementById('cardNumber')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\s/g, '');
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
             e.target.value = formattedValue;
         });
 
-        // Expiry date formatting
         document.getElementById('expiryDate')?.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 2) {
@@ -254,9 +228,7 @@ $activePage = 'checkout';
             e.target.value = value;
         });
 
-        // Complete purchase
         document.getElementById('completePurchaseBtn')?.addEventListener('click', function() {
-            // Basic validation
             const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
             const email = document.getElementById('email').value;
             const country = document.getElementById('country').value;
@@ -266,7 +238,6 @@ $activePage = 'checkout';
                 return;
             }
 
-            // In production, this would make an API call to process the payment
             if (confirm('Complete your purchase for $<?php echo number_format($total, 2); ?>?')) {
                 window.location.href = `buy.php?game_id=${gameId}&payment=${total}&user_id=${userId}`;
             }
