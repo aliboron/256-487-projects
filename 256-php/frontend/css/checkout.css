@@ -205,11 +205,12 @@
 .form-control:focus {
     outline: none;
     border-color: #4caf50;
+    color: #ffffff;
     background: #1a1a1a;
 }
 
 .form-control::placeholder {
-    color: #555;
+    color: #fbf7f7;
 }
 
 /* Billing Form */

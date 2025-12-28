@@ -1,7 +1,5 @@
 <?php
 
-use function Aws\filter;
-
 require_once __DIR__ . '/../api/db.php';
 
 session_start();

@@ -268,8 +268,6 @@ $activePage = 'checkout';
 
             // In production, this would make an API call to process the payment
             if (confirm('Complete your purchase for $<?php echo number_format($total, 2); ?>?')) {
-                // Simulate successful purchase
-                alert('Purchase successful! Game added to your library.');
                 window.location.href = `buy.php?game_id=${gameId}&payment=${total}&user_id=${userId}`;
             }
         });
