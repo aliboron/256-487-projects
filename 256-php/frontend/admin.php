@@ -1,4 +1,16 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_data'])) {
+    header('Location: login.php?redirect=admin');
+    exit;
+}
+
+if ($_SESSION['user_data']['type'] !== 'admin') {
+    header('Location: index.php');
+    exit;
+}
+
 require_once __DIR__ . '/../api/db.php';
 
 // Get developer filter if set
